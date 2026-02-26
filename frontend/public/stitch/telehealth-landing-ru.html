@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TelemedRU — Забота о вашем здоровье в один клик</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1A3B8E",
+              "accent-emerald": "#10B981",
+              "trust-green": "#E8F5E9",
+              "background-light": "#F8FAFC",
+              "background-dark": "#0F172A",
+            },
+            fontFamily: {
+              "sans": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.375rem", "lg": "0.5rem", "xl": "1rem", "2xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body { 
+                font-family: 'Inter', sans-serif; 
+                @apply bg-background-light text-slate-900;
+            }
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="dark:bg-background-dark dark:text-slate-100">
+<header class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-background-dark/95 backdrop-blur-md">
+<div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-primary text-white p-2 rounded-xl">
+<span class="material-symbols-outlined block text-2xl">medical_services</span>
+</div>
+<h1 class="text-2xl font-bold tracking-tight text-primary">Telemed<span class="text-slate-900 dark:text-white">RU</span></h1>
+</div>
+<nav class="hidden lg:flex items-center gap-8">
+<a class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors" href="#">Врачи</a>
+<a class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors" href="#">Специальности</a>
+<a class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors" href="#">Услуги</a>
+<a class="text-sm font-semibold text-slate-600 hover:text-primary transition-colors" href="#">О платформе</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="hidden sm:block text-sm font-semibold text-primary hover:bg-primary/5 px-4 py-2.5 rounded-xl transition-all">
+                    Войти
+                </button>
+<button class="bg-primary hover:bg-[#142e70] text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-primary/20 transition-all">
+                    Личный кабинет
+                </button>
+</div>
+</div>
+</header>
+<main>
+<section class="relative pt-12 pb-20 px-6 overflow-hidden">
+<div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<div class="flex flex-col gap-8 relative z-10">
+<div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent-emerald/10 text-accent-emerald text-sm font-semibold w-fit border border-accent-emerald/20">
+<span class="material-symbols-outlined text-base">verified_user</span>
+                        Государственная лицензия
+                    </div>
+<h2 class="text-5xl lg:text-7xl font-extrabold leading-tight tracking-tight text-slate-900 dark:text-white">
+                        Забота о вашем здоровье в <span class="text-primary">один клик</span>
+</h2>
+<p class="text-xl text-slate-600 dark:text-slate-400 max-w-lg leading-relaxed">
+                        Профессиональные медицинские консультации с врачами ведущих клиник. Быстро, анонимно и официально.
+                    </p>
+<div class="flex flex-col gap-4 max-w-xl">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-base" placeholder="Поиск врача, специальности или симптома" type="text"/>
+</div>
+<button class="bg-primary hover:bg-[#142e70] text-white px-8 py-4 rounded-2xl text-lg font-bold shadow-xl shadow-primary/30 flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02]">
+<span>Задать вопрос</span>
+<span class="material-symbols-outlined">chat_bubble</span>
+</button>
+</div>
+<div class="flex items-center gap-4 mt-2">
+<div class="flex -space-x-3">
+<img alt="Doctor 1" class="w-12 h-12 rounded-full border-4 border-white dark:border-background-dark object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyTnpTESvu3uRVqoPZWnsbus0-8BTM7nmkbJ-JoBgcVU9NBLT1Qi0op55n2dEtTdwW4j_CkdKQIDYwlKqDAyzrg49-naQ5IlfNSCPyIGaPHwSQGU-t0MrWf4KTaYEjmsSLOffsD9BecAuwxvIrk4AHngQ9x_zuCkW6zbkiE02Nx1ajbr8NAhJ73Fs0MZdr2gjnc8WI7jDwQ6nL7kss7QipDJgGf9Nakm2XSK1ntQj1a43fE6tUHOIiYuAm76v3cGpCNm98iKaiwnEQ"/>
+<img alt="Doctor 2" class="w-12 h-12 rounded-full border-4 border-white dark:border-background-dark object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIpqQ2zc39wEasO3Q4MJoyn4ykFIigI2L-pKKLuXNuwqMPG2PPRPfyYywN9TMrbbefM7Wal7QBtglwMOKNYH3VcsxYtADNWO0mVEtPdd_-wKMxRlQx4T1KlQfNSOvHF22G1gKdPdDzC9XA-NrT6sZcJ1YhTWIx0O-1JgrLJq0inxJbanRJShvZdE1nNGF1K1fjWeI5_Xj01BNiZDFJ0HQegelE6IU6vHlppTOH8I4lSNXKZPhgPns1J6cubeOTWql7b68BZfbeewVQ"/>
+<img alt="Doctor 3" class="w-12 h-12 rounded-full border-4 border-white dark:border-background-dark object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgIjv7GLOCFLsrAeQBGYkhV6pIsDcyq51Suut0Dy6ih5COIlIYrKTbuiElHOJP6ZZ_7i0Bg5t3QWYYEM4RxIpnmQiqrp4Oh6ukPo1HAseRuwdozo-6-s8Vz2_m5ULPdeiVUvE596k4xw1e0LkUOylKr7gEdRLaRxIfFQFVCaEwcGNjKLHnvZz5l5xO6zTLOjHWTdOr0_OFns-RjpJQSQ_Z5cVONeurcDc0n0xmg22thODZmqv52xGbYLUed59idsBDktyWolVl6ZQr"/>
+</div>
+<div class="text-sm">
+<div class="flex items-center gap-1 text-accent-emerald">
+<span class="material-symbols-outlined text-sm fill-1">star</span>
+<span class="font-bold">4.9/5</span>
+</div>
+<p class="text-slate-500 font-medium">от 50,000+ довольных пациентов</p>
+</div>
+</div>
+</div>
+<div class="relative">
+<div class="absolute -top-20 -right-20 w-80 h-80 bg-accent-emerald/10 rounded-full blur-[100px]"></div>
+<div class="absolute -bottom-20 -left-20 w-80 h-80 bg-primary/10 rounded-full blur-[100px]"></div>
+<div class="relative aspect-[4/5] rounded-[2.5rem] bg-slate-100 overflow-hidden shadow-2xl border-8 border-white dark:border-slate-800">
+<div class="w-full h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuASLCrcwMhbPf6PI9C7bCG4ODG2Y903cswwwuV7vK5Cj5m4m9sihcKUCVh-r_p1RI4f9Oe9um9w1gNPQ_CcY8dW9EU2pqYZb6s_tgGDFLhW_sLyaSJLkOmxdbzFpDmKip0wD4bXVkeixcJovKxX7rGkRrYMPepl98gR6NTkU0aFHBED0LvFZax_gAjtDidHzXL78lqKxM_bpq0QIVPEX8S099IbcRqwyknD9SFXNtITh5AWg8TOI503H0NbdjcWWXAhPlSU5crnOENK')"></div>
+<div class="absolute top-6 left-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-3 rounded-2xl shadow-sm border border-white/20">
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-accent-emerald animate-pulse"></div>
+<span class="text-sm font-bold text-slate-800 dark:text-white">Врачи онлайн</span>
+</div>
+</div>
+<div class="absolute bottom-6 left-6 right-6 bg-primary/95 backdrop-blur-md p-6 rounded-2xl flex items-center justify-between text-white">
+<div>
+<p class="text-xs font-medium opacity-80 uppercase tracking-widest">Ближайшее окно</p>
+<p class="text-xl font-bold">Сегодня, 14:30</p>
+</div>
+<div class="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
+<span class="material-symbols-outlined">videocam</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-12 px-6">
+<div class="max-w-7xl mx-auto bg-primary rounded-[2.5rem] p-12 lg:p-16 grid grid-cols-2 md:grid-cols-4 gap-12 text-white shadow-2xl shadow-primary/20 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
+<div class="flex flex-col items-center text-center gap-2">
+<span class="text-4xl lg:text-5xl font-extrabold tracking-tight">500+</span>
+<span class="text-white/70 text-sm font-semibold uppercase tracking-widest">врачей</span>
+</div>
+<div class="flex flex-col items-center text-center gap-2 md:border-l border-white/10">
+<span class="text-4xl lg:text-5xl font-extrabold tracking-tight">10к+</span>
+<span class="text-white/70 text-sm font-semibold uppercase tracking-widest">консультаций</span>
+</div>
+<div class="flex flex-col items-center text-center gap-2 md:border-l border-white/10">
+<span class="text-4xl lg:text-5xl font-extrabold tracking-tight">4.9</span>
+<span class="text-white/70 text-sm font-semibold uppercase tracking-widest">рейтинг</span>
+</div>
+<div class="flex flex-col items-center text-center gap-2 md:border-l border-white/10">
+<span class="text-4xl lg:text-5xl font-extrabold tracking-tight">15</span>
+<span class="text-white/70 text-sm font-semibold uppercase tracking-widest">мин. ожидание</span>
+</div>
+</div>
+</section>
+<section class="py-24 px-6">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+<div class="max-w-xl">
+<h3 class="text-3xl lg:text-4xl font-extrabold tracking-tight mb-4 text-slate-900 dark:text-white">Популярные направления</h3>
+<p class="text-slate-500 text-lg">Квалифицированная помощь по более чем 25 медицинским специальностям круглосуточно.</p>
+</div>
+<a class="flex items-center gap-2 text-primary font-bold hover:gap-4 transition-all" href="#">
+                        Все направления <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+<div class="group p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 transition-all cursor-pointer text-center">
+<div class="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all mx-auto mb-6">
+<span class="material-symbols-outlined text-3xl">stethoscope</span>
+</div>
+<h4 class="font-bold text-slate-900 dark:text-white">Терапевт</h4>
+</div>
+<div class="group p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 transition-all cursor-pointer text-center">
+<div class="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all mx-auto mb-6">
+<span class="material-symbols-outlined text-3xl">child_care</span>
+</div>
+<h4 class="font-bold text-slate-900 dark:text-white">Педиатр</h4>
+</div>
+<div class="group p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 transition-all cursor-pointer text-center">
+<div class="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all mx-auto mb-6">
+<span class="material-symbols-outlined text-3xl">favorite</span>
+</div>
+<h4 class="font-bold text-slate-900 dark:text-white">Кардиолог</h4>
+</div>
+<div class="group p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 transition-all cursor-pointer text-center">
+<div class="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all mx-auto mb-6">
+<span class="material-symbols-outlined text-3xl">psychology</span>
+</div>
+<h4 class="font-bold text-slate-900 dark:text-white">Невролог</h4>
+</div>
+<div class="group p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 transition-all cursor-pointer text-center">
+<div class="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all mx-auto mb-6">
+<span class="material-symbols-outlined text-3xl">spa</span>
+</div>
+<h4 class="font-bold text-slate-900 dark:text-white">Дерматолог</h4>
+</div>
+<div class="group p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900/50 hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 transition-all cursor-pointer text-center">
+<div class="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all mx-auto mb-6">
+<span class="material-symbols-outlined text-3xl">groups</span>
+</div>
+<h4 class="font-bold text-slate-900 dark:text-white">Психолог</h4>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 px-6 bg-slate-50 dark:bg-slate-900/30">
+<div class="max-w-7xl mx-auto">
+<div class="text-center mb-16">
+<h3 class="text-3xl lg:text-4xl font-extrabold tracking-tight mb-4">Отзывы пациентов</h3>
+<p class="text-slate-500">Нам доверяют самое ценное — свое здоровье</p>
+</div>
+<div class="flex gap-8 overflow-x-auto pb-12 snap-x no-scrollbar">
+<div class="min-w-[340px] md:min-w-[450px] snap-center p-10 bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col gap-8">
+<div class="flex gap-1 text-accent-emerald">
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+</div>
+<p class="text-lg leading-relaxed text-slate-700 dark:text-slate-300">"Очень удобный сервис! Получила консультацию педиатра в 11 вечера, когда у ребенка поднялась температура. Врач был вежлив и профессионален."</p>
+<div class="flex items-center gap-4 border-t border-slate-50 dark:border-slate-700 pt-6">
+<img alt="Patient 1" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4xLxbVzyGGTqC2Oiwc5UWtKlSklLAI7aRaGHOH__PorskryNocxAs30i_Bbcx4Bx7r13AaHu-QySXgzLmP-tDesJG26L-ak6N63PE2bqjPBGNyHojaPfp4FsooMeKddVNyQXweTMg8BHZtSL3ZSnWXoroNCh8vogA9l7wIFzBhDaQwSr830VcVEXCPca8LLrS3jtB6x6oAOZt4rd6c_Rs-edhLDBUoHY8t1OVIbYXJRyl9tR1rcE5RFb6JDHXEWDd9hCTuDRFFMLm"/>
+<div>
+<h5 class="font-bold">Мария С.</h5>
+<p class="text-sm text-slate-500">Мама двоих детей</p>
+</div>
+</div>
+</div>
+<div class="min-w-[340px] md:min-w-[450px] snap-center p-10 bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col gap-8">
+<div class="flex gap-1 text-accent-emerald">
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+</div>
+<p class="text-lg leading-relaxed text-slate-700 dark:text-slate-300">"Сэкономил кучу времени на поездке в клинику. Невролог подробно разобрал мои анализы и скорректировал лечение. Рекомендую всем занятым людям."</p>
+<div class="flex items-center gap-4 border-t border-slate-50 dark:border-slate-700 pt-6">
+<img alt="Patient 2" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-gnTlYjREOw0L0LoLhUaX5Yws8xGYepL_agjCrPKDR3xQjSuJ4jYuKEvWxpl7-LdUO1KSqODNP5WAPZrmERUnyDnOcTRywH7v5gODe2lvtjy2Og1sJweaV89rm5ig9clNPdvpadhwunOZ2g7Nv6vEadZhs1FyzBvKxzwkumU_Di8fefRCC4wB6bSmABGnSWz-fhlrh1YANTXwUx8m86jU3sJeq5caCEvVz6LqyL3pzS_9xZS89cAw3Woy2JYnWeolGgh0NYwC3JlN"/>
+<div>
+<h5 class="font-bold">Алексей Д.</h5>
+<p class="text-sm text-slate-500">Предприниматель</p>
+</div>
+</div>
+</div>
+<div class="min-w-[340px] md:min-w-[450px] snap-center p-10 bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col gap-8">
+<div class="flex gap-1 text-accent-emerald">
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+<span class="material-symbols-outlined fill-1">star</span>
+</div>
+<p class="text-lg leading-relaxed text-slate-700 dark:text-slate-300">"Психолог помог мне справиться с выгоранием. Консультации в комфортной домашней обстановке – это совсем другой уровень доверия и спокойствия."</p>
+<div class="flex items-center gap-4 border-t border-slate-50 dark:border-slate-700 pt-6">
+<img alt="Patient 3" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqhi_Kh_9vk0pD0OiEK_0vJ7WCAjcuZBsgAqSouJuHbeR5XwvpKzP9f6qxVjRV53ik-p7m0ci7qvCcOIaiAHsGpDkjVm-xKwk-vVgS_ugmq_5NfRYy3xVg57GgMi-Izu7jOb9xSHJVKFmhurzh9bQMdaf9PVKyVRBgYUEWvbtWfF7d2Bx15j5v-eroBM4fjpnnGfZt2CzatJ08YEGawkbvYJnqosQ6rxgnEOiN6tle1ze5Uk2SLAn15HUkz9tacyZYWB9CSDWI04Z7"/>
+<div>
+<h5 class="font-bold">Елена К.</h5>
+<p class="text-sm text-slate-500">Дизайнер</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="py-24 px-6">
+<div class="max-w-6xl mx-auto rounded-[3rem] bg-primary p-12 lg:p-20 text-center flex flex-col items-center gap-8 relative overflow-hidden">
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 32px 32px;"></div>
+<h2 class="text-4xl lg:text-5xl font-extrabold text-white leading-tight relative z-10">Готовы начать заботиться <br/>о своем здоровье?</h2>
+<p class="text-white/80 text-lg max-w-2xl relative z-10">Получите первую консультацию со скидкой 50% после регистрации. Наши специалисты на связи прямо сейчас.</p>
+<div class="flex flex-col sm:flex-row gap-4 relative z-10 mt-4 w-full sm:w-auto">
+<button class="bg-white text-primary px-10 py-4 rounded-2xl text-lg font-bold hover:bg-slate-50 transition-all shadow-xl shadow-black/20">
+                        Записаться сейчас
+                    </button>
+<button class="bg-primary-dark/20 text-white border border-white/30 backdrop-blur-md px-10 py-4 rounded-2xl text-lg font-bold hover:bg-white/10 transition-all">
+                        Узнать стоимость
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-white dark:bg-background-dark pt-24 pb-12 px-6 border-t border-slate-100 dark:border-slate-800">
+<div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+<div class="col-span-1 lg:col-span-1">
+<div class="flex items-center gap-3 mb-8">
+<div class="bg-primary text-white p-2 rounded-xl">
+<span class="material-symbols-outlined block">medical_services</span>
+</div>
+<h2 class="text-2xl font-bold tracking-tight text-primary">TelemedRU</h2>
+</div>
+<p class="text-slate-500 leading-relaxed mb-6">Лицензированная платформа для дистанционного медицинского обслуживания и консультаций в РФ.</p>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all" href="#">VK</a>
+<a class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all" href="#">TG</a>
+</div>
+</div>
+<div>
+<h6 class="font-bold text-slate-900 dark:text-white mb-8">Для пациентов</h6>
+<ul class="space-y-4 text-slate-500">
+<li><a class="hover:text-primary transition-colors" href="#">Найти врача</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Все специальности</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Как это работает</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Вопросы и ответы</a></li>
+</ul>
+</div>
+<div>
+<h6 class="font-bold text-slate-900 dark:text-white mb-8">Компания</h6>
+<ul class="space-y-4 text-slate-500">
+<li><a class="hover:text-primary transition-colors" href="#">О нас</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Лицензии</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Контакты</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Партнерам</a></li>
+</ul>
+</div>
+<div>
+<h6 class="font-bold text-slate-900 dark:text-white mb-8">Служба поддержки</h6>
+<div class="space-y-4">
+<p class="text-primary font-bold text-lg">8 (800) 555-35-35</p>
+<p class="text-slate-500 text-sm">Ежедневно с 09:00 до 21:00 (МСК)</p>
+<button class="text-slate-900 dark:text-white font-bold flex items-center gap-2 border-b-2 border-primary/20 hover:border-primary transition-all pb-1">
+                        Написать в чат
+                    </button>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-6 text-slate-400 text-sm">
+<p>© 2024 TelemedRU. Все права защищены. ООО "Телемед Диджитал".</p>
+<div class="flex gap-8">
+<a class="hover:text-slate-900 dark:hover:text-white transition-colors" href="#">Политика конфиденциальности</a>
+<a class="hover:text-slate-900 dark:hover:text-white transition-colors" href="#">Оферта</a>
+</div>
+</div>
+</footer>
+
+</body></html>

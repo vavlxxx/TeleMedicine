@@ -1,0 +1,68 @@
+html {
+  scroll-behavior: smooth;
+}
+
+.app-shell {
+  overflow-x: clip;
+}
+
+.hero-title {
+  text-wrap: balance;
+}
+
+.js-hero-parallax-card {
+  transform-origin: center;
+  transform-style: preserve-3d;
+}
+
+.js-reveal-section,
+.js-stats-item,
+.js-specialty-item,
+.js-testimonial-item,
+.js-footer-col,
+.js-hero-reveal {
+  will-change: transform, opacity;
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  .hero-section {
+    min-height: calc(100vh - 84px);
+    display: flex;
+    align-items: center;
+  }
+
+  .hero-visual {
+    max-width: 620px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .js-testimonials-track {
+    scroll-padding-inline: 1.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .js-testimonials-track {
+    scroll-padding-inline: 1rem;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .js-hero-parallax-card {
+    cursor: default;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js-reveal-section,
+  .js-stats-item,
+  .js-specialty-item,
+  .js-testimonial-item,
+  .js-footer-col,
+  .js-hero-reveal {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}
