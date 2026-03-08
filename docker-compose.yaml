@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: telemedicine_postgres
+    env_file:
+      - ./backend/.env.postgres
+    ports:
+      - "6432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d telemedicine"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    container_name: telemedicine_backend
+    env_file:
+      - ./backend/.env.docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - backend_uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: telemedicine_frontend
+    environment:
+      VITE_BACKEND_PROXY_TARGET: http://backend:8000
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+
+volumes:
+  postgres_data:
+  backend_uploads:

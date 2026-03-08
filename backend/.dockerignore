@@ -1,0 +1,8 @@
+.venv
+.ruff_cache
+.vscode
+.pytest_cache
+__pycache__
+README.md
+logs
+uploads
