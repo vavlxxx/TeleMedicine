@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ru"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Каталог врачей - МедКонсалт</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0f3bbd",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101522",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-50 bg-white dark:bg-background-dark border-b border-slate-200 dark:border-slate-800">
+<div class="max-w-7xl mx-auto px-4 lg:px-8">
+<div class="flex items-center justify-between h-16 gap-8">
+<!-- Logo -->
+<div class="flex items-center gap-3 shrink-0">
+<div class="text-primary">
+<svg class="size-8" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M44 4H30.6666V17.3334H17.3334V30.6666H4V44H44V4Z" fill="currentColor"></path>
+</svg>
+</div>
+<span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">МедКонсалт</span>
+</div>
+<!-- Search Bar -->
+<div class="hidden md:flex flex-1 max-w-md">
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 text-xl">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border-none bg-slate-100 dark:bg-slate-800 rounded-lg focus:ring-2 focus:ring-primary text-sm" placeholder="Поиск врача или услуги" type="text"/>
+</div>
+</div>
+<!-- Nav Links -->
+<nav class="hidden lg:flex items-center gap-8">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Врачи</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Услуги</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Клиники</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Блог</a>
+</nav>
+<!-- Actions -->
+<div class="flex items-center gap-4">
+<button class="bg-primary text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-primary/90 transition-all">
+                        Войти
+                    </button>
+<div class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-slate-500">person</span>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 text-sm text-slate-500 mb-6">
+<a class="hover:text-primary" href="#">Главная</a>
+<span class="material-symbols-outlined text-xs">chevron_right</span>
+<span class="text-slate-900 dark:text-slate-300 font-medium">Каталог врачей</span>
+</nav>
+<!-- Header Section -->
+<div class="mb-8">
+<h1 class="text-3xl lg:text-4xl font-extrabold tracking-tight mb-2">Специалисты в Москве</h1>
+<p class="text-slate-600 dark:text-slate-400">Найдите подходящего врача и запишитесь на онлайн-консультацию</p>
+</div>
+<!-- Quick Filters -->
+<div class="flex flex-wrap gap-2 mb-8">
+<button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:border-primary transition-colors">
+                Кардиолог <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:border-primary transition-colors">
+                Терапевт <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:border-primary transition-colors">
+                Невролог <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:border-primary transition-colors">
+                Хирург <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+<div class="flex flex-col lg:flex-row gap-8">
+<!-- Left Sidebar: Filters -->
+<aside class="w-full lg:w-72 shrink-0">
+<div class="bg-white dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-800 sticky top-24">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-lg font-bold">Фильтры</h2>
+<button class="text-primary text-xs font-semibold uppercase tracking-wider">Сбросить</button>
+</div>
+<div class="space-y-6">
+<!-- Filter Item -->
+<div>
+<label class="flex items-center gap-3 mb-3 text-slate-700 dark:text-slate-300 font-semibold text-sm">
+<span class="material-symbols-outlined text-primary">stethoscope</span>
+                                Специальность
+                            </label>
+<select class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm py-2 px-3 focus:ring-2 focus:ring-primary/20">
+<option>Все специальности</option>
+<option>Кардиолог</option>
+<option>Терапевт</option>
+</select>
+</div>
+<!-- Filter Item -->
+<div>
+<label class="flex items-center gap-3 mb-3 text-slate-700 dark:text-slate-300 font-semibold text-sm">
+<span class="material-symbols-outlined text-primary">schedule</span>
+                                Опыт работы
+                            </label>
+<div class="space-y-2">
+<label class="flex items-center gap-2 text-sm cursor-pointer">
+<input class="rounded text-primary focus:ring-primary border-slate-300" type="checkbox"/>
+<span>Более 5 лет</span>
+</label>
+<label class="flex items-center gap-2 text-sm cursor-pointer">
+<input class="rounded text-primary focus:ring-primary border-slate-300" type="checkbox"/>
+<span>Более 10 лет</span>
+</label>
+</div>
+</div>
+<!-- Filter Item -->
+<div>
+<label class="flex items-center gap-3 mb-3 text-slate-700 dark:text-slate-300 font-semibold text-sm">
+<span class="material-symbols-outlined text-primary">payments</span>
+                                Стоимость приема
+                            </label>
+<div class="flex items-center gap-2">
+<input class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm py-2 px-3" placeholder="От" type="text"/>
+<span class="text-slate-400">—</span>
+<input class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm py-2 px-3" placeholder="До" type="text"/>
+</div>
+</div>
+<!-- Filter Item -->
+<div>
+<label class="flex items-center gap-3 mb-3 text-slate-700 dark:text-slate-300 font-semibold text-sm">
+<span class="material-symbols-outlined text-primary">star</span>
+                                Рейтинг
+                            </label>
+<div class="flex flex-col gap-2">
+<label class="flex items-center gap-2 text-sm cursor-pointer">
+<input class="text-primary focus:ring-primary border-slate-300" name="rating" type="radio"/>
+<span class="flex items-center gap-1">4.5+ <span class="material-symbols-outlined text-yellow-400 text-sm fill-1">star</span></span>
+</label>
+<label class="flex items-center gap-2 text-sm cursor-pointer">
+<input class="text-primary focus:ring-primary border-slate-300" name="rating" type="radio"/>
+<span class="flex items-center gap-1">4.0+ <span class="material-symbols-outlined text-yellow-400 text-sm fill-1">star</span></span>
+</label>
+</div>
+</div>
+</div>
+<button class="w-full mt-8 bg-primary text-white py-3 rounded-lg font-bold text-sm hover:shadow-lg hover:shadow-primary/20 transition-all">
+                        Применить
+                    </button>
+</div>
+</aside>
+<!-- Right Column: Results Grid -->
+<div class="flex-1">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+<!-- Doctor Card 1 -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden group hover:shadow-xl transition-shadow">
+<div class="relative h-56 bg-slate-100 dark:bg-slate-800">
+<img alt="" class="w-full h-full object-cover" data-alt="Портрет мужчины врача в медицинском халате" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCvMVSdONmIHmGm0HqYud1L9aAyLSzuA9m43iof6kYs62nOiDaiMCBXXW1KaGFwiJpjNCq3iabx6Purdf4DKAxFGm5B0y1JMVjjVrB60WbzUi4b5eCK0UHB632AHVd7WcD0ZMduvK8RICOI5a0mA0WoUBCRJgypJQ9tgiiRK1yd7Tf4sMNPmdnH68uZ7RCCx_MMEMjickdVKWibdEyBuIMlpv2OSBdbgnhmrmjIlSjvss3Z_v4jnniclMZB06XHXk7-QGLpDVkhdU4s"/>
+<div class="absolute top-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-yellow-400 text-sm fill-1">star</span>
+<span class="text-xs font-bold">4.9</span>
+</div>
+</div>
+<div class="p-5">
+<span class="text-primary text-xs font-bold uppercase tracking-wider mb-1 block">Кардиолог</span>
+<h3 class="text-lg font-bold mb-1 group-hover:text-primary transition-colors">Иванов Иван Иванович</h3>
+<p class="text-slate-500 text-sm mb-4">Стаж: 12 лет • д.м.н.</p>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+<div>
+<p class="text-xs text-slate-400 uppercase font-bold">Прием от</p>
+<p class="text-lg font-extrabold text-slate-900 dark:text-white">2 500 ₽</p>
+</div>
+<button class="bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all">
+                                    Записаться
+                                </button>
+</div>
+</div>
+</div>
+<!-- Doctor Card 2 -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden group hover:shadow-xl transition-shadow">
+<div class="relative h-56 bg-slate-100 dark:bg-slate-800">
+<img alt="" class="w-full h-full object-cover" data-alt="Портрет женщины врача терапевта" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDh8FeS65WJlKedProvQIZiA6Z1YEzz5lGi8z86AnNNJSVVaRrGueOe-izcz65mUYVq5pUX1aR5XDipEaOjtm96OB_fwnkOteLPyhd1mFBOAHoWYn1rvYD-mIfSuMw2_7a1nhlEuqABhlvyjnyacUbiK6_Tb1etSIODqTh2-yt9Hlu89R4YX7PbRzZj4Jn4csk8-4yaZyCCQe-HB3DUndZedOdZ52XL35iDXSgFiPJDyhSbM0yvXCBjy8r2rgvlvIRXLvcXXC1flHY2"/>
+<div class="absolute top-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-yellow-400 text-sm fill-1">star</span>
+<span class="text-xs font-bold">5.0</span>
+</div>
+</div>
+<div class="p-5">
+<span class="text-primary text-xs font-bold uppercase tracking-wider mb-1 block">Терапевт</span>
+<h3 class="text-lg font-bold mb-1 group-hover:text-primary transition-colors">Петрова Анна Сергеевна</h3>
+<p class="text-slate-500 text-sm mb-4">Стаж: 8 лет • Врач высшей категории</p>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+<div>
+<p class="text-xs text-slate-400 uppercase font-bold">Прием от</p>
+<p class="text-lg font-extrabold text-slate-900 dark:text-white">1 800 ₽</p>
+</div>
+<button class="bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all">
+                                    Записаться
+                                </button>
+</div>
+</div>
+</div>
+<!-- Doctor Card 3 -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden group hover:shadow-xl transition-shadow">
+<div class="relative h-56 bg-slate-100 dark:bg-slate-800">
+<img alt="" class="w-full h-full object-cover" data-alt="Портрет врача хирурга" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBID0ZoULiIERh9WcgjsK_Nms1zO4BcJztH1uF9bt_BuwylUU40xRnAhkBGTzyiZJk2VGJL1Pv5MvTK7-3kETd9mVIdbGUbnhWNyzuxHra2HyQVvb9uEr2Rra5zNNW6X1aE6kt8ekS3jhX64L27C5LXiYYPyD2EkW5AIPXlHjnQH6pdUoOdonwI2PwW9DuS45-fwKURssqncWyp7AMfXO8IO4vA8XbHX21biLMDOenPibnC5F_AOTt4R8e-MfOCtFRZQmg7rJOu0RwA"/>
+<div class="absolute top-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-yellow-400 text-sm fill-1">star</span>
+<span class="text-xs font-bold">4.8</span>
+</div>
+</div>
+<div class="p-5">
+<span class="text-primary text-xs font-bold uppercase tracking-wider mb-1 block">Хирург</span>
+<h3 class="text-lg font-bold mb-1 group-hover:text-primary transition-colors">Сидоров Алексей Викторович</h3>
+<p class="text-slate-500 text-sm mb-4">Стаж: 15 лет • К.м.н.</p>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+<div>
+<p class="text-xs text-slate-400 uppercase font-bold">Прием от</p>
+<p class="text-lg font-extrabold text-slate-900 dark:text-white">3 200 ₽</p>
+</div>
+<button class="bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all">
+                                    Записаться
+                                </button>
+</div>
+</div>
+</div>
+<!-- Doctor Card 4 -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden group hover:shadow-xl transition-shadow">
+<div class="relative h-56 bg-slate-100 dark:bg-slate-800">
+<img alt="" class="w-full h-full object-cover" data-alt="Портрет врача невролога" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjhHWJ7ouYGbpaDsYeUYrcL9OoW4rUuW8wasv_DrhzDx32mHU09WckN7zPoUsQL76x0GKKJ0cYvnmua5TMsLyin3M81kvFIMPb4Ogn3_3Zt2g4FtokudQxqfEoiur8t1Ow4WMsFplvOQ_ovo5kM-W5ASbvPHETYebDPPNceL8LOneEEyAjWEPcA-QFiU37iNJwRUGP2jBi8UuET-vnadQdBK2Qkes7nEnz6Ja2LXL1_0j6BWGhRoh89dVqwGYQDJ284Vy9Ce_4mQEx"/>
+<div class="absolute top-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-yellow-400 text-sm fill-1">star</span>
+<span class="text-xs font-bold">4.7</span>
+</div>
+</div>
+<div class="p-5">
+<span class="text-primary text-xs font-bold uppercase tracking-wider mb-1 block">Невролог</span>
+<h3 class="text-lg font-bold mb-1 group-hover:text-primary transition-colors">Кузнецова Елена Павловна</h3>
+<p class="text-slate-500 text-sm mb-4">Стаж: 10 лет • Врач первой категории</p>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+<div>
+<p class="text-xs text-slate-400 uppercase font-bold">Прием от</p>
+<p class="text-lg font-extrabold text-slate-900 dark:text-white">2 100 ₽</p>
+</div>
+<button class="bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all">
+                                    Записаться
+                                </button>
+</div>
+</div>
+</div>
+<!-- Doctor Card 5 -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden group hover:shadow-xl transition-shadow">
+<div class="relative h-56 bg-slate-100 dark:bg-slate-800">
+<img alt="" class="w-full h-full object-cover" data-alt="Портрет женщины педиатра" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_8tzOZxaeJl-Fiha2d-6TLfTJSsM8D08Ht3cjIJXtnCkQ2qIRymY5JQw73y7f73NWXXTv4OLX6-BjgmtXiDEBuy1fiAjhnNtIzSD1lIh_NTuqo9-1IZBoY0RGjyDkty4CGzbC55iMnKCuuqL5jeJfTZsZsS4C82kBF_ELOx30PEKuTQlKp7hz3l-nmROuTaczzhXLSR7NDFE_8OLVuoxUFb4BrA-YHFoVXjKL6kTYRC8BhKbvLTIVzZ5wp8UgwWrbrtCQplPEacIN"/>
+<div class="absolute top-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-yellow-400 text-sm fill-1">star</span>
+<span class="text-xs font-bold">4.9</span>
+</div>
+</div>
+<div class="p-5">
+<span class="text-primary text-xs font-bold uppercase tracking-wider mb-1 block">Педиатр</span>
+<h3 class="text-lg font-bold mb-1 group-hover:text-primary transition-colors">Смирнова Ольга Михайловна</h3>
+<p class="text-slate-500 text-sm mb-4">Стаж: 18 лет • Заслуженный врач</p>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+<div>
+<p class="text-xs text-slate-400 uppercase font-bold">Прием от</p>
+<p class="text-lg font-extrabold text-slate-900 dark:text-white">2 800 ₽</p>
+</div>
+<button class="bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all">
+                                    Записаться
+                                </button>
+</div>
+</div>
+</div>
+<!-- Doctor Card 6 -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden group hover:shadow-xl transition-shadow">
+<div class="relative h-56 bg-slate-100 dark:bg-slate-800">
+<img alt="" class="w-full h-full object-cover" data-alt="Портрет мужчины врача дерматолога" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDE8sqtoHdEsIMEi6hPpLAevPOOtqZIjOLPtXUX_3-IAw1kvW5B1T2QHcM1MIV3EK4CVG78zTDmI9cO5yjr2tEbHfLNjXv8DWLZKNBPdpD3iEK_LDMwu5ft4lWvotqCnXvJRApS_PH2gSqdmU2RlgVPq1rHga7BvjuZTZv6Yw1VaevsG2v1R2L97aSvDzfP2DExAzyVI7Zeg2tqrF-zCX-adjONIb_a6eCQQWEqr1RWp7Bza1BvLJgGEEsLx2DAiF6J34_vGNgOjl4r"/>
+<div class="absolute top-3 right-3 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1">
+<span class="material-symbols-outlined text-yellow-400 text-sm fill-1">star</span>
+<span class="text-xs font-bold">4.6</span>
+</div>
+</div>
+<div class="p-5">
+<span class="text-primary text-xs font-bold uppercase tracking-wider mb-1 block">Дерматолог</span>
+<h3 class="text-lg font-bold mb-1 group-hover:text-primary transition-colors">Морозов Денис Игоревич</h3>
+<p class="text-slate-500 text-sm mb-4">Стаж: 6 лет • Специалист по лазерной медицине</p>
+<div class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+<div>
+<p class="text-xs text-slate-400 uppercase font-bold">Прием от</p>
+<p class="text-lg font-extrabold text-slate-900 dark:text-white">1 950 ₽</p>
+</div>
+<button class="bg-primary/10 text-primary hover:bg-primary hover:text-white px-4 py-2 rounded-lg text-sm font-bold transition-all">
+                                    Записаться
+                                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination -->
+<div class="mt-12 flex justify-center">
+<nav class="flex items-center gap-1">
+<button class="size-10 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-800 hover:bg-slate-50">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="size-10 rounded-lg flex items-center justify-center bg-primary text-white font-bold">1</button>
+<button class="size-10 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-800 hover:bg-slate-50 font-medium">2</button>
+<button class="size-10 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-800 hover:bg-slate-50 font-medium">3</button>
+<span class="px-2">...</span>
+<button class="size-10 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-800 hover:bg-slate-50 font-medium">12</button>
+<button class="size-10 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-800 hover:bg-slate-50">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</nav>
+</div>
+</div>
+</div>
+</main>
+<footer class="bg-white dark:bg-background-dark border-t border-slate-200 dark:border-slate-800 mt-20 py-12">
+<div class="max-w-7xl mx-auto px-4 lg:px-8">
+<div class="flex flex-col md:flex-row justify-between gap-10">
+<div class="max-w-xs">
+<div class="flex items-center gap-3 mb-6">
+<div class="text-primary">
+<svg class="size-6" fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M44 4H30.6666V17.3334H17.3334V30.6666H4V44H44V4Z" fill="currentColor"></path>
+</svg>
+</div>
+<span class="text-lg font-bold tracking-tight">МедКонсалт</span>
+</div>
+<p class="text-sm text-slate-500 mb-6">Профессиональные медицинские консультации в любом месте и в любое время.</p>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-8">
+<div>
+<h4 class="font-bold mb-4 text-sm">Платформа</h4>
+<ul class="space-y-2 text-sm text-slate-500">
+<li><a class="hover:text-primary" href="#">Как это работает</a></li>
+<li><a class="hover:text-primary" href="#">Для врачей</a></li>
+<li><a class="hover:text-primary" href="#">Цены</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold mb-4 text-sm">Поддержка</h4>
+<ul class="space-y-2 text-sm text-slate-500">
+<li><a class="hover:text-primary" href="#">Помощь</a></li>
+<li><a class="hover:text-primary" href="#">Контакты</a></li>
+<li><a class="hover:text-primary" href="#">FAQ</a></li>
+</ul>
+</div>
+<div class="col-span-2 sm:col-span-1">
+<h4 class="font-bold mb-4 text-sm">Приложение</h4>
+<div class="flex flex-col gap-2">
+<div class="bg-slate-900 text-white p-2 rounded-lg flex items-center gap-2 cursor-pointer">
+<span class="material-symbols-outlined">phone_iphone</span>
+<div class="text-[10px] leading-tight">Download on the <br/><span class="text-xs font-bold">App Store</span></div>
+</div>
+<div class="bg-slate-900 text-white p-2 rounded-lg flex items-center gap-2 cursor-pointer">
+<span class="material-symbols-outlined">ad_units</span>
+<div class="text-[10px] leading-tight">Get it on <br/><span class="text-xs font-bold">Google Play</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="border-t border-slate-100 dark:border-slate-800 mt-12 pt-8 flex flex-col md:flex-row justify-between gap-4 text-xs text-slate-400">
+<p>© 2024 МедКонсалт. Все права защищены.</p>
+<div class="flex gap-6">
+<a class="hover:text-primary" href="#">Политика конфиденциальности</a>
+<a class="hover:text-primary" href="#">Условия использования</a>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

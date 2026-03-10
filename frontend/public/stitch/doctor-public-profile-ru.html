@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html class="light" lang="ru"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Профиль врача | TelemedRU</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3b82f6", // Blue 500
+                        "primary-dark": "#2563eb", // Blue 600
+                        "primary-light": "#eff6ff", // Blue 50
+                        "navy-custom": "#1e293b", // Slate 800
+                        "brand-dark": "#0f172a", // Slate 900
+                        "background-light": "#f8fafc",
+                        "accent-blue": "#0ea5e9", // Sky 500
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "2xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body { @apply antialiased text-slate-900 bg-background-light; }
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .timeline-dot::before {
+            content: '';
+            @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white;
+        }
+    </style>
+</head>
+<body class="font-display">
+<div class="relative flex min-h-screen flex-col">
+<header class="flex items-center justify-between border-b border-slate-200 bg-white px-4 md:px-12 py-4 sticky top-0 z-50">
+<div class="flex items-center gap-10">
+<div class="flex items-center gap-2 text-brand-dark">
+<span class="material-symbols-outlined text-primary text-3xl font-semibold">medical_services</span>
+<h2 class="text-xl font-extrabold tracking-tight">Telemed<span class="text-primary">RU</span></h2>
+</div>
+<nav class="hidden lg:flex items-center gap-8">
+<a class="text-slate-600 text-[15px] font-semibold hover:text-primary transition-colors" href="#">Врачи</a>
+<a class="text-slate-600 text-[15px] font-semibold hover:text-primary transition-colors" href="#">Услуги</a>
+<a class="text-slate-600 text-[15px] font-semibold hover:text-primary transition-colors" href="#">Для клиник</a>
+<a class="text-slate-600 text-[15px] font-semibold hover:text-primary transition-colors" href="#">О сервисе</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center bg-slate-100 rounded-full px-4 py-2 w-64">
+<span class="material-symbols-outlined text-slate-400 text-xl">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full ml-2" placeholder="Поиск врача или услуги" type="text"/>
+</div>
+<button class="flex items-center justify-center rounded-full h-11 px-6 bg-brand-dark text-white text-sm font-bold hover:bg-slate-700 transition-all">
+                    Личный кабинет
+                </button>
+</div>
+</header>
+<main class="mx-auto max-w-7xl w-full px-4 md:px-12 py-8">
+<nav class="flex items-center gap-2 text-sm text-slate-400 mb-8">
+<a class="hover:text-primary transition-colors" href="#">Главная</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Кардиологи</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-slate-900 font-semibold">Александр Иванов</span>
+</nav>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<div class="lg:col-span-8 space-y-8">
+<section class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+<div class="flex flex-col md:flex-row gap-8 items-start">
+<div class="relative shrink-0">
+<div class="w-40 h-40 md:w-48 md:h-48 rounded-2xl bg-slate-100 overflow-hidden ring-4 ring-slate-50">
+<img alt="Д-р Александр Иванов" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTSpu7vTs-PlAi0zPgR-557L3zWfCWXg-83lbq0Bpk0uCSvvpRH1XF-9zA44gTW_WxyLNiMi1iLbtCdGQlSj6ATTo02Eoe5nnE1tClV51KUQmmHZIRkre0VeCDSGhyJTDz3KN4cJFg1V6xwA4yvRlOHAfANOtSt4YOY-pcySqyt9VdKjTTHBSEzmLaY9SJPculIxZgx56GQgfFaK25xthE-F6RwZsG8oTefYT8VAe0FFsAHjXjjyAbvD0mCTClXO9XWnTPTq8xoQL-"/>
+</div>
+<div class="absolute -bottom-3 -right-3 bg-primary text-white p-2 rounded-xl shadow-lg flex items-center gap-1.5" title="Проверенный эксперт">
+<span class="material-symbols-outlined text-xl font-bold">verified</span>
+</div>
+</div>
+<div class="flex-1 pt-2">
+<div class="flex items-center gap-3 mb-2">
+<span class="px-3 py-1 bg-primary-light text-primary-dark text-[11px] font-bold uppercase tracking-wider rounded-full border border-blue-100">Проверенный эксперт</span>
+<span class="flex items-center gap-1 text-amber-500 font-bold text-sm">
+<span class="material-symbols-outlined fill-1 text-lg">star</span> 4.9
+                                    </span>
+</div>
+<h1 class="text-4xl font-extrabold text-brand-dark mb-2 tracking-tight">Александр Иванов</h1>
+<p class="text-xl text-slate-500 font-medium mb-6">Врач-кардиолог, аритмолог</p>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
+<div>
+<p class="text-xs text-slate-400 uppercase font-bold tracking-widest mb-1">Стаж работы</p>
+<p class="text-brand-dark font-bold">15 лет</p>
+</div>
+<div>
+<p class="text-xs text-slate-400 uppercase font-bold tracking-widest mb-1">Категория</p>
+<p class="text-brand-dark font-bold">Высшая</p>
+</div>
+<div>
+<p class="text-xs text-slate-400 uppercase font-bold tracking-widest mb-1">Ученая степень</p>
+<p class="text-brand-dark font-bold">К.М.Н.</p>
+</div>
+</div>
+<div class="flex flex-wrap gap-3">
+<button class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-brand-dark font-bold rounded-xl transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">favorite</span>
+                                        В избранное
+                                    </button>
+<button class="p-3 border border-slate-200 rounded-xl text-slate-400 hover:text-brand-dark hover:border-brand-dark transition-all">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+<div class="flex border-b border-slate-100 px-8 overflow-x-auto no-scrollbar gap-8">
+<button class="py-5 border-b-2 border-primary text-brand-dark font-bold text-sm whitespace-nowrap">О враче</button>
+<button class="py-5 text-slate-400 font-bold text-sm whitespace-nowrap hover:text-brand-dark transition-colors">Образование и опыт</button>
+<button class="py-5 text-slate-400 font-bold text-sm whitespace-nowrap hover:text-brand-dark transition-colors">Отзывы (48)</button>
+<button class="py-5 text-slate-400 font-bold text-sm whitespace-nowrap hover:text-brand-dark transition-colors">Публикации</button>
+</div>
+<div class="p-8">
+<div class="prose max-w-none mb-12">
+<h3 class="text-2xl font-bold text-brand-dark mb-4">Специализация</h3>
+<p class="text-slate-600 leading-relaxed text-lg">
+                                    Занимаюсь диагностикой и лечением сердечно-сосудистых заболеваний: гипертонической болезни, ишемической болезни сердца, нарушений ритма. Особое внимание уделяю превентивной кардиологии и разработке индивидуальных программ реабилитации. Использую только методы с доказанной эффективностью.
+                                </p>
+</div>
+<h3 class="text-2xl font-bold text-brand-dark mb-8">Опыт и образование</h3>
+<div class="space-y-0 ml-4 border-l-2 border-slate-100">
+<div class="relative pl-10 pb-10">
+<div class="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-primary-light border-2 border-primary flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-primary text-base font-bold">work</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-extrabold text-primary uppercase tracking-widest mb-1">2018 — Наст. время</span>
+<h4 class="text-lg font-bold text-brand-dark">Ведущий кардиолог</h4>
+<p class="text-slate-500 font-medium">НМИЦ Кардиологии им. ак. Е.И. Чазова</p>
+</div>
+</div>
+<div class="relative pl-10 pb-10">
+<div class="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-slate-50 border-2 border-slate-200 flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-slate-400 text-base font-bold">school</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-1">2012 — 2018</span>
+<h4 class="text-lg font-bold text-brand-dark">Врач-кардиолог стационара</h4>
+<p class="text-slate-500 font-medium">ГКБ №1 им. Н.И. Пирогова</p>
+</div>
+</div>
+<div class="relative pl-10">
+<div class="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-slate-50 border-2 border-slate-200 flex items-center justify-center z-10">
+<span class="material-symbols-outlined text-slate-400 text-base font-bold">history_edu</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-1">2010 — 2012</span>
+<h4 class="text-lg font-bold text-brand-dark">Ординатура по кардиологии</h4>
+<p class="text-slate-500 font-medium">ПМГМУ им. И.М. Сеченова</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section class="space-y-6">
+<div class="flex items-center justify-between">
+<h3 class="text-2xl font-bold text-brand-dark">Отзывы пациентов</h3>
+<button class="text-primary font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all">
+                                Все 48 отзывов
+                                <span class="material-symbols-outlined text-lg">arrow_right_alt</span>
+</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400">ЕМ</div>
+<div>
+<h4 class="text-sm font-bold text-brand-dark">Елена М.</h4>
+<p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest">12 марта 2024</p>
+</div>
+</div>
+<div class="flex text-amber-400 mb-3">
+<span class="material-symbols-outlined text-[16px] fill-1">star</span>
+<span class="material-symbols-outlined text-[16px] fill-1">star</span>
+<span class="material-symbols-outlined text-[16px] fill-1">star</span>
+<span class="material-symbols-outlined text-[16px] fill-1">star</span>
+<span class="material-symbols-outlined text-[16px] fill-1">star</span>
+</div>
+<p class="text-slate-600 leading-relaxed italic text-sm">"Очень внимательный доктор. Подробно объяснил результаты обследования и скорректировал лечение. Чувствую себя намного лучше!"</p>
+</div>
+<div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-400">ИП</div>
+<div>
+<h4 class="text-sm font-bold text-brand-dark">Игорь П.</h4>
+<p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest">28 февраля 2024</p>
+</div>
+</div>
+<div class="flex text-amber-400 mb-3">
+<span class="material-symbols-outlined text-[16px] fill-1">star</span>
+<span class="material-symbols-outlined text-[16px] fill-1">star</span>
+<span class="material-symbols-outlined text-[16px] fill-1">star</span>
+<span class="material-symbols-outlined text-[16px] fill-1">star</span>
+<span class="material-symbols-outlined text-[16px] fill-1">star</span>
+</div>
+<p class="text-slate-600 leading-relaxed italic text-sm">"Профессионал своего дела. Онлайн-консультация прошла продуктивно, получил ответы на все вопросы. Рекомендую коллегам."</p>
+</div>
+</div>
+</section>
+</div>
+<div class="lg:col-span-4">
+<aside class="sticky top-28 space-y-6">
+<div class="bg-white rounded-3xl p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
+<div class="flex justify-between items-start mb-8">
+<div>
+<p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-1">Стоимость консультации</p>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-extrabold text-brand-dark">3 500 ₽</span>
+<span class="text-slate-300 line-through font-medium">4 500 ₽</span>
+</div>
+</div>
+<div class="w-12 h-12 bg-primary-light rounded-2xl flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">payments</span>
+</div>
+</div>
+<div class="space-y-4 mb-8">
+<div class="flex items-center gap-4 p-4 rounded-2xl bg-blue-50 border border-blue-100/50">
+<span class="material-symbols-outlined text-primary-dark text-2xl">bolt</span>
+<div>
+<p class="text-sm font-bold text-brand-dark">Ближайший слот</p>
+<p class="text-sm text-primary-dark font-extrabold">Завтра, 14:30 (МСК)</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-4 rounded-2xl border border-slate-50 bg-slate-50/50">
+<span class="material-symbols-outlined text-slate-400 text-2xl">video_camera_front</span>
+<div>
+<p class="text-sm font-bold text-brand-dark">Формат приема</p>
+<p class="text-sm text-slate-500 font-medium">Видео, аудио или чат</p>
+</div>
+</div>
+</div>
+<div class="space-y-3">
+<button class="w-full bg-primary hover:bg-primary-dark text-white font-extrabold py-5 rounded-2xl shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-3">
+<span class="material-symbols-outlined font-bold">chat</span>
+                                    Начать чат
+                                </button>
+<button class="w-full bg-brand-dark hover:bg-slate-800 text-white font-extrabold py-5 rounded-2xl transition-all flex items-center justify-center gap-3">
+<span class="material-symbols-outlined font-bold">calendar_month</span>
+                                    Записаться на прием
+                                </button>
+</div>
+<div class="mt-8 pt-6 border-t border-slate-50 flex items-center gap-3 text-slate-400">
+<span class="material-symbols-outlined text-lg">verified_user</span>
+<p class="text-[11px] font-semibold leading-tight">Гарантия безопасности платежа и возврата средств в случае отмены</p>
+</div>
+</div>
+<div class="bg-brand-dark text-white rounded-3xl p-8 relative overflow-hidden group">
+<div class="relative z-10">
+<h4 class="font-bold text-xl mb-3">Сложный случай?</h4>
+<p class="text-slate-400 text-sm mb-6 leading-relaxed">Наш медицинский консьерж поможет подобрать нужного специалиста и подготовить документы.</p>
+<button class="text-primary font-bold text-sm flex items-center gap-2 group-hover:gap-3 transition-all">
+                                    Связаться с консьержем
+                                    <span class="material-symbols-outlined">arrow_right_alt</span>
+</button>
+</div>
+<span class="material-symbols-outlined absolute -bottom-4 -right-4 text-white/5 text-[120px] pointer-events-none">support_agent</span>
+</div>
+</aside>
+</div>
+</div>
+</main>
+<footer class="bg-white border-t border-slate-200 mt-20 pt-16 pb-12">
+<div class="mx-auto max-w-7xl px-4 md:px-12">
+<div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-12 mb-16">
+<div class="lg:col-span-2">
+<div class="flex items-center gap-2 text-brand-dark mb-6">
+<span class="material-symbols-outlined text-primary text-3xl font-semibold">medical_services</span>
+<h2 class="text-xl font-extrabold tracking-tight">Telemed<span class="text-primary">RU</span></h2>
+</div>
+<p class="text-slate-500 text-sm leading-relaxed mb-8 max-w-xs">Профессиональная медицинская помощь доступная каждому. Консультации ведущих экспертов без очередей и поездок.</p>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all" href="#"><span class="material-symbols-outlined text-xl">share</span></a>
+<a class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-primary hover:text-white transition-all" href="#"><span class="material-symbols-outlined text-xl">public</span></a>
+</div>
+</div>
+<div>
+<h4 class="font-bold text-brand-dark mb-6 text-sm uppercase tracking-widest">Пациентам</h4>
+<ul class="space-y-4 text-sm font-semibold text-slate-500">
+<li><a class="hover:text-primary transition-colors" href="#">Поиск врача</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Как это работает</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Стоимость услуг</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">База знаний</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold text-brand-dark mb-6 text-sm uppercase tracking-widest">Врачам</h4>
+<ul class="space-y-4 text-sm font-semibold text-slate-500">
+<li><a class="hover:text-primary transition-colors" href="#">Подключить клинику</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Личный кабинет</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Партнерская программа</a></li>
+</ul>
+</div>
+<div class="lg:col-span-2">
+<h4 class="font-bold text-brand-dark mb-6 text-sm uppercase tracking-widest">Поддержка</h4>
+<div class="space-y-4">
+<p class="text-2xl font-extrabold text-brand-dark">8 (800) 555-35-35</p>
+<p class="text-slate-500 text-sm font-medium">Ежедневно с 08:00 до 22:00 (МСК)</p>
+<button class="px-6 py-3 border border-slate-200 rounded-xl text-brand-dark font-bold text-sm hover:border-primary hover:text-primary transition-all">
+                                Написать в чат
+                            </button>
+</div>
+</div>
+</div>
+<div class="pt-8 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6">
+<p class="text-xs text-slate-400 font-medium">© 2024 TelemedRU. Все права защищены. Имеются противопоказания, необходима консультация специалиста.</p>
+<div class="flex gap-8 text-xs font-bold text-slate-400">
+<a class="hover:text-brand-dark transition-colors" href="#">Политика конфиденциальности</a>
+<a class="hover:text-brand-dark transition-colors" href="#">Оферта</a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+
+</body></html>
