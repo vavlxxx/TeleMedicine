@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "test:smoke": "node --test smoke/*.test.js",
     "preview": "vite preview",
     "fetch:stitch": "bash ./scripts/fetch-stitch-screen.sh"
   },

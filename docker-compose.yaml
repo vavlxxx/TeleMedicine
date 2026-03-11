@@ -17,6 +17,7 @@ services:
   backend:
     build:
       context: ./backend
+      target: runtime
     container_name: telemedicine_backend
     env_file:
       - ./backend/.env.docker
@@ -26,6 +27,19 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      - backend_uploads:/app/uploads
+
+  backend-test:
+    build:
+      context: ./backend
+      target: test
+    env_file:
+      - ./backend/.env.docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
       - backend_uploads:/app/uploads
 
   frontend:

@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -15,6 +15,10 @@ RUN apt-get update \
 RUN pip install --no-cache-dir "poetry==$POETRY_VERSION"
 
 COPY pyproject.toml poetry.lock ./
+
+
+FROM base AS runtime
+
 RUN poetry install --without dev --no-root
 
 COPY . .
@@ -23,3 +27,11 @@ RUN mkdir -p /app/uploads/doctor_documents /app/logs
 EXPOSE 8000
 
 CMD ["sh", "-c", "poetry run alembic upgrade head && poetry run uvicorn src.main:app --host 0.0.0.0 --port 8000"]
+
+
+FROM base AS test
+
+RUN poetry install --with dev --no-root
+
+COPY . .
+RUN mkdir -p /app/uploads/doctor_documents /app/logs

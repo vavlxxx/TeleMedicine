@@ -1,4 +1,5 @@
 from pathlib import Path
+from urllib.parse import urlparse
 from typing import Literal
 
 from pydantic import BaseModel, Field, SecretStr, field_validator, model_validator
@@ -37,6 +38,15 @@ class AppSettings(BaseModel):
     docs_url: str | None = "/docs"
     redoc_url: str | None = "/redoc"
     openapi_url: str | None = "/openapi.json"
+
+    @field_validator("docs_url", "redoc_url", "openapi_url", mode="before")
+    @classmethod
+    def normalize_optional_docs_url(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        if isinstance(value, str) and value.strip().lower() in {"", "none", "null"}:
+            return None
+        return value
 
 
 class JwtSettings(BaseModel):
@@ -137,10 +147,26 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def validate_security(self) -> "Settings":
         if self.app.mode == "PROD":
-            if self.auth.secret_key.get_secret_value() == "change-me-please-in-prod-very-long-secret":
+            secret_value = self.auth.secret_key.get_secret_value()
+            if (
+                secret_value == "change-me-please-in-prod-very-long-secret"
+                or "change-me" in secret_value.lower()
+                or "dev-only" in secret_value.lower()
+            ):
                 raise ValueError("Set a strong CFG_AUTH__SECRET_KEY for PROD mode")
             if not self.auth.cookie_secure:
                 raise ValueError("CFG_AUTH__COOKIE_SECURE must be true for PROD mode")
+            if not self.cors.allowed_origins:
+                raise ValueError("CFG_CORS__ALLOWED_ORIGINS must contain at least one frontend origin for PROD mode")
+            invalid_origins = [
+                origin
+                for origin in self.cors.allowed_origins
+                if (urlparse(origin).hostname or "").lower() in {"localhost", "127.0.0.1", "0.0.0.0"}
+            ]
+            if invalid_origins:
+                raise ValueError("CFG_CORS__ALLOWED_ORIGINS must not contain localhost origins in PROD mode")
+            if any(value is not None for value in (self.app.docs_url, self.app.redoc_url, self.app.openapi_url)):
+                raise ValueError("Disable API docs and OpenAPI endpoints in PROD mode")
         return self
 
 

@@ -1,6 +1,7 @@
 from src.models.auth import User
 from src.models.doctor import DoctorQualificationDocument, Specialization
 from src.models.qa import Question, QuestionComment
+from src.schemas.admin import AdminAnswerListItemDTO, AdminQuestionListItemDTO, AdminUserListItemDTO
 from src.schemas.auth import SpecializationInlineDTO, UserProfileDTO
 from src.schemas.doctor import DoctorDetailDTO, DoctorListItemDTO, DoctorQualificationDocumentDTO, SpecializationDTO
 from src.schemas.qa import QuestionCommentDTO, QuestionDTO, UserShortDTO
@@ -86,4 +87,45 @@ def to_question(question: Question) -> QuestionDTO:
         created_at=question.created_at,
         author=to_user_short(question.author),
         comments=[to_question_comment(item) for item in comments],
+    )
+
+
+def to_admin_user_item(user: User) -> AdminUserListItemDTO:
+    return AdminUserListItemDTO(
+        id=user.id,
+        username=user.username,
+        role=user.role,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        is_active=user.is_active,
+        is_verified_doctor=user.is_verified_doctor,
+        created_at=user.created_at,
+        qualification_documents_count=len(user.qualification_documents),
+        questions_count=len(user.questions),
+        comments_count=len(user.comments),
+    )
+
+
+def to_admin_answer_item(comment: QuestionComment) -> AdminAnswerListItemDTO:
+    return AdminAnswerListItemDTO(
+        id=comment.id,
+        question_id=comment.question_id,
+        text=comment.text,
+        created_at=comment.created_at,
+        author=to_user_short(comment.author),
+    )
+
+
+def to_admin_question_item(question: Question) -> AdminQuestionListItemDTO:
+    comments = sorted(question.comments, key=lambda item: item.created_at, reverse=True)
+    latest_comment = comments[0] if comments else None
+
+    return AdminQuestionListItemDTO(
+        id=question.id,
+        text=question.text,
+        created_at=question.created_at,
+        author=to_user_short(question.author),
+        comments_count=len(question.comments),
+        latest_answer_at=latest_comment.created_at if latest_comment else None,
+        latest_answer_author=to_user_short(latest_comment.author) if latest_comment else None,
     )

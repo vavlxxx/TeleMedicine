@@ -5,12 +5,12 @@ from sqlalchemy.orm import selectinload
 
 from src.api.v1.dependencies.auth import CurrentUserDep
 from src.api.v1.dependencies.db import DBSessionDep
-from src.api.v1.serializers import to_doctor_detail, to_doctor_list_item, to_document_dto
+from src.api.v1.serializers import to_doctor_list_item, to_document_dto
 from src.config import settings
 from src.models.auth import User
 from src.models.doctor import DoctorQualificationDocument
 from src.models.enums import UserRole
-from src.schemas.doctor import DoctorDetailDTO, DoctorListItemDTO, DoctorQualificationDocumentDTO
+from src.schemas.doctor import DoctorListItemDTO, DoctorQualificationDocumentDTO
 from src.utils.files import save_doctor_document
 
 router = APIRouter(prefix="/doctors", tags=["Doctors"])
@@ -39,20 +39,17 @@ async def list_doctors(
     return [to_doctor_list_item(item) for item in doctors]
 
 
-@router.get("/{doctor_id}", response_model=DoctorDetailDTO)
-async def get_doctor(doctor_id: int, db: DBSessionDep) -> DoctorDetailDTO:
+@router.get("/{doctor_id}", response_model=DoctorListItemDTO)
+async def get_doctor(doctor_id: int, db: DBSessionDep) -> DoctorListItemDTO:
     result = await db.execute(
         select(User)
         .where(User.id == doctor_id, User.role == UserRole.DOCTOR, User.is_verified_doctor.is_(True))
-        .options(
-            selectinload(User.specializations),
-            selectinload(User.qualification_documents),
-        )
+        .options(selectinload(User.specializations))
     )
     doctor = result.scalar_one_or_none()
     if doctor is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Doctor not found")
-    return to_doctor_detail(doctor)
+    return to_doctor_list_item(doctor)
 
 
 @router.post("/me/documents", response_model=list[DoctorQualificationDocumentDTO], status_code=status.HTTP_201_CREATED)

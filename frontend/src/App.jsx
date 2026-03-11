@@ -1,14 +1,17 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useAuth } from './auth/AuthContext'
 import { fetchMockTestimonials } from './mocks/testimonials'
+import { AppLink } from './router'
+import { getDefaultAuthenticatedPath, routes } from './routes'
 import './App.css'
 
 const navItems = [
-  { label: 'Врачи', href: '#hero' },
-  { label: 'Специальности', href: '#specialties' },
-  { label: 'Услуги', href: '#services' },
-  { label: 'О платформе', href: '#about' },
+  { label: 'Врачи', href: routes.doctors, type: 'route' },
+  { label: 'Вопросы', href: routes.questions, type: 'route' },
+  { label: 'Специальности', href: '#specialties', type: 'anchor' },
+  { label: 'О платформе', href: '#about', type: 'anchor' },
 ]
 
 const stats = [
@@ -46,6 +49,7 @@ const symptomExamples = [
 ]
 
 function App() {
+  const auth = useAuth()
   const rootRef = useRef(null)
   const heroVisualRef = useRef(null)
   const mobileTestimonialsTrackRef = useRef(null)
@@ -58,6 +62,14 @@ function App() {
 
   const animatedPlaceholder = `Например: ${typedSymptom}${showTypeCursor ? '|' : ' '}`
   const mobileTestimonialsCount = isTestimonialsLoading ? 3 : testimonials.length
+  const dashboardHref = auth.isAuthenticated
+    ? getDefaultAuthenticatedPath(auth.user)
+    : routes.register
+  const dashboardLabel = auth.isAuthenticated
+    ? auth.hasRole('admin', 'superuser')
+      ? 'Панель модерации'
+      : 'Мой профиль'
+    : 'Регистрация'
 
   const goToMobileTestimonial = (index) => {
     if (!mobileTestimonialsCount) {
@@ -381,13 +393,23 @@ function App() {
 
           <nav className="hidden items-center gap-8 xl:flex">
             {navItems.map((item) => (
-              <a
-                key={item.label}
-                className="text-sm font-semibold text-slate-600 transition-colors hover:text-primary"
-                href={item.href}
-              >
-                {item.label}
-              </a>
+              item.type === 'route' ? (
+                <AppLink
+                  key={item.label}
+                  className="text-sm font-semibold text-slate-600 transition-colors hover:text-primary"
+                  href={item.href}
+                >
+                  {item.label}
+                </AppLink>
+              ) : (
+                <a
+                  key={item.label}
+                  className="text-sm font-semibold text-slate-600 transition-colors hover:text-primary"
+                  href={item.href}
+                >
+                  {item.label}
+                </a>
+              )
             ))}
           </nav>
 
@@ -405,12 +427,27 @@ function App() {
           </button>
 
           <div className="hidden items-center gap-2 sm:gap-4 md:flex">
-            <button className="hidden rounded-xl px-4 py-2.5 text-sm font-semibold text-primary transition-all hover:bg-primary/5 lg:block">
-              Войти
-            </button>
-            <button className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-[#142e70]">
-              Личный кабинет
-            </button>
+            {!auth.isAuthenticated ? (
+              <AppLink
+                className="hidden rounded-xl px-4 py-2.5 text-sm font-semibold text-primary transition-all hover:bg-primary/5 lg:block"
+                href={routes.login}
+              >
+                Войти
+              </AppLink>
+            ) : (
+              <AppLink
+                className="hidden rounded-xl px-4 py-2.5 text-sm font-semibold text-primary transition-all hover:bg-primary/5 lg:block"
+                href={routes.questions}
+              >
+                Q&A
+              </AppLink>
+            )}
+            <AppLink
+              className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-[#142e70]"
+              href={dashboardHref}
+            >
+              {dashboardLabel}
+            </AppLink>
           </div>
         </div>
 
@@ -420,31 +457,42 @@ function App() {
         >
           <nav className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-4 py-4 sm:px-6">
             {navItems.map((item) => (
-              <a
-                key={`${item.label}-mobile`}
-                className="rounded-xl px-3 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-primary"
-                href={item.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                {item.label}
-              </a>
+              item.type === 'route' ? (
+                <AppLink
+                  key={`${item.label}-mobile`}
+                  className="rounded-xl px-3 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-primary"
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {item.label}
+                </AppLink>
+              ) : (
+                <a
+                  key={`${item.label}-mobile`}
+                  className="rounded-xl px-3 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 hover:text-primary"
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {item.label}
+                </a>
+              )
             ))}
 
             <div className="mt-2 flex flex-col gap-2 border-t border-slate-100 pt-3">
-              <button
+              <AppLink
                 className="rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-primary transition-all hover:bg-primary/5"
+                href={auth.isAuthenticated ? routes.questions : routes.login}
                 onClick={() => setIsMobileMenuOpen(false)}
-                type="button"
               >
-                Войти
-              </button>
-              <button
+                {auth.isAuthenticated ? 'Вопросы и ответы' : 'Войти'}
+              </AppLink>
+              <AppLink
                 className="rounded-xl bg-primary px-3 py-2.5 text-left text-sm font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-[#142e70]"
+                href={dashboardHref}
                 onClick={() => setIsMobileMenuOpen(false)}
-                type="button"
               >
-                Личный кабинет
-              </button>
+                {dashboardLabel}
+              </AppLink>
             </div>
           </nav>
         </div>
@@ -496,12 +544,15 @@ function App() {
                   />
                 </div>
 
-                <button className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-base font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-[#142e70] sm:rounded-2xl sm:px-8 sm:py-4 sm:text-lg sm:shadow-xl sm:shadow-primary/30 sm:hover:scale-[1.02]">
+                <AppLink
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-base font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-[#142e70] sm:rounded-2xl sm:px-8 sm:py-4 sm:text-lg sm:shadow-xl sm:shadow-primary/30 sm:hover:scale-[1.02]"
+                  href={routes.questions}
+                >
                   <span>Задать вопрос</span>
                   <span className="material-symbols-outlined text-lg sm:text-xl">
                     chat_bubble
                   </span>
-                </button>
+                </AppLink>
               </div>
 
               <div className="js-hero-reveal mt-1 hidden items-center gap-4 md:flex">
@@ -625,13 +676,13 @@ function App() {
                   специальностям круглосуточно.
                 </p>
               </div>
-              <a
+              <AppLink
                 className="hidden items-center gap-2 font-bold text-primary transition-all hover:gap-4 md:flex"
-                href="#"
+                href={routes.doctors}
               >
                 Все направления{' '}
                 <span className="material-symbols-outlined">arrow_forward</span>
-              </a>
+              </AppLink>
             </div>
 
             <div className="js-specialties-grid grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
@@ -652,15 +703,15 @@ function App() {
               ))}
             </div>
 
-            <a
+            <AppLink
               className="mt-6 flex items-center justify-center gap-2 rounded-xl border border-slate-100 bg-white py-3 text-sm font-bold text-primary shadow-sm md:hidden"
-              href="#"
+              href={routes.doctors}
             >
               Все направления{' '}
               <span className="material-symbols-outlined text-base">
                 arrow_forward
               </span>
-            </a>
+            </AppLink>
           </div>
         </section>
 
@@ -858,12 +909,18 @@ function App() {
               Наши специалисты на связи прямо сейчас.
             </p>
             <div className="relative z-10 mt-2 flex w-full flex-col gap-3 sm:mt-4 sm:w-auto sm:flex-row sm:gap-4">
-              <button className="w-full rounded-xl bg-white px-4 py-3.5 text-sm font-bold text-primary shadow-lg shadow-black/20 transition-all hover:bg-slate-50 sm:w-auto sm:rounded-2xl sm:px-10 sm:py-4 sm:text-lg sm:shadow-xl">
+              <AppLink
+                className="w-full rounded-xl bg-white px-4 py-3.5 text-center text-sm font-bold text-primary shadow-lg shadow-black/20 transition-all hover:bg-slate-50 sm:w-auto sm:rounded-2xl sm:px-10 sm:py-4 sm:text-lg sm:shadow-xl"
+                href={routes.doctors}
+              >
                 Записаться сейчас
-              </button>
-              <button className="w-full rounded-xl border border-white/30 bg-primary/20 px-4 py-3.5 text-sm font-bold text-white backdrop-blur-md transition-all hover:bg-white/10 sm:w-auto sm:rounded-2xl sm:px-10 sm:py-4 sm:text-lg">
-                Узнать стоимость
-              </button>
+              </AppLink>
+              <AppLink
+                className="w-full rounded-xl border border-white/30 bg-primary/20 px-4 py-3.5 text-center text-sm font-bold text-white backdrop-blur-md transition-all hover:bg-white/10 sm:w-auto sm:rounded-2xl sm:px-10 sm:py-4 sm:text-lg"
+                href={auth.isAuthenticated ? dashboardHref : routes.register}
+              >
+                {auth.isAuthenticated ? 'Открыть кабинет' : 'Создать аккаунт'}
+              </AppLink>
             </div>
           </div>
         </section>
@@ -917,18 +974,18 @@ function App() {
                 Ежедневно с 09:00 до 21:00 (МСК)
               </p>
               <div className="flex gap-3">
-                <a
+                <AppLink
                   className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-primary"
-                  href="#"
+                  href={routes.doctors}
                 >
-                  VK
-                </a>
-                <a
+                  MD
+                </AppLink>
+                <AppLink
                   className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold text-primary"
-                  href="#"
+                  href={routes.questions}
                 >
-                  TG
-                </a>
+                  QA
+                </AppLink>
               </div>
             </div>
 
@@ -939,12 +996,12 @@ function App() {
                 ООО "Телемед Диджитал".
               </p>
               <div className="flex flex-wrap gap-x-4 gap-y-2">
-                <a className="underline underline-offset-2 hover:text-primary" href="#">
-                  Конфиденциальность
-                </a>
-                <a className="underline underline-offset-2 hover:text-primary" href="#">
-                  Оферта
-                </a>
+                <AppLink className="underline underline-offset-2 hover:text-primary" href={routes.login}>
+                  Вход в систему
+                </AppLink>
+                <AppLink className="underline underline-offset-2 hover:text-primary" href={routes.register}>
+                  Регистрация
+                </AppLink>
               </div>
             </div>
           </div>
@@ -967,18 +1024,18 @@ function App() {
               обслуживания и консультаций в РФ.
             </p>
             <div className="flex gap-4">
-              <a
+              <AppLink
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-primary transition-all hover:bg-primary hover:text-white"
-                href="#"
+                href={routes.doctors}
               >
-                VK
-              </a>
-              <a
+                MD
+              </AppLink>
+              <AppLink
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-primary transition-all hover:bg-primary hover:text-white"
-                href="#"
+                href={routes.questions}
               >
-                TG
-              </a>
+                QA
+              </AppLink>
             </div>
           </div>
 
@@ -986,24 +1043,24 @@ function App() {
             <h6 className="mb-6 font-bold text-slate-900 sm:mb-8">Для пациентов</h6>
             <ul className="space-y-4 text-slate-500">
               <li>
-                <a className="transition-colors hover:text-primary" href="#">
+                <AppLink className="transition-colors hover:text-primary" href={routes.doctors}>
                   Найти врача
-                </a>
+                </AppLink>
               </li>
               <li>
-                <a className="transition-colors hover:text-primary" href="#">
+                <a className="transition-colors hover:text-primary" href="#specialties">
                   Все специальности
                 </a>
               </li>
               <li>
-                <a className="transition-colors hover:text-primary" href="#">
+                <a className="transition-colors hover:text-primary" href="#services">
                   Как это работает
                 </a>
               </li>
               <li>
-                <a className="transition-colors hover:text-primary" href="#">
+                <AppLink className="transition-colors hover:text-primary" href={routes.questions}>
                   Вопросы и ответы
-                </a>
+                </AppLink>
               </li>
             </ul>
           </div>
@@ -1012,24 +1069,24 @@ function App() {
             <h6 className="mb-6 font-bold text-slate-900 sm:mb-8">Компания</h6>
             <ul className="space-y-4 text-slate-500">
               <li>
-                <a className="transition-colors hover:text-primary" href="#">
+                <a className="transition-colors hover:text-primary" href="#about">
                   О нас
                 </a>
               </li>
               <li>
-                <a className="transition-colors hover:text-primary" href="#">
-                  Лицензии
-                </a>
+                <AppLink className="transition-colors hover:text-primary" href={routes.account}>
+                  Мой профиль
+                </AppLink>
               </li>
               <li>
-                <a className="transition-colors hover:text-primary" href="#">
-                  Контакты
-                </a>
+                <AppLink className="transition-colors hover:text-primary" href={routes.login}>
+                  Войти
+                </AppLink>
               </li>
               <li>
-                <a className="transition-colors hover:text-primary" href="#">
-                  Партнерам
-                </a>
+                <AppLink className="transition-colors hover:text-primary" href={routes.register}>
+                  Создать аккаунт
+                </AppLink>
               </li>
             </ul>
           </div>
@@ -1041,9 +1098,12 @@ function App() {
               <p className="text-sm text-slate-500">
                 Ежедневно с 09:00 до 21:00 (МСК)
               </p>
-              <button className="flex items-center gap-2 border-b-2 border-primary/20 pb-1 font-bold text-slate-900 transition-all hover:border-primary">
+              <AppLink
+                className="flex items-center gap-2 border-b-2 border-primary/20 pb-1 font-bold text-slate-900 transition-all hover:border-primary"
+                href={routes.questions}
+              >
                 Написать в чат
-              </button>
+              </AppLink>
             </div>
           </div>
         </div>
@@ -1051,12 +1111,12 @@ function App() {
         <div className="mx-auto hidden w-full max-w-7xl flex-col items-center justify-between gap-4 border-t border-slate-100 pt-8 text-center text-sm text-slate-400 md:flex lg:flex-row lg:gap-6 lg:text-left">
           <p>© 2024 TelemedRU. Все права защищены. ООО "Телемед Диджитал".</p>
           <div className="flex flex-wrap justify-center gap-6 sm:gap-8 lg:justify-end">
-            <a className="transition-colors hover:text-slate-900" href="#">
-              Политика конфиденциальности
-            </a>
-            <a className="transition-colors hover:text-slate-900" href="#">
-              Оферта
-            </a>
+            <AppLink className="transition-colors hover:text-slate-900" href={routes.login}>
+              Вход
+            </AppLink>
+            <AppLink className="transition-colors hover:text-slate-900" href={routes.register}>
+              Регистрация
+            </AppLink>
           </div>
         </div>
       </footer>

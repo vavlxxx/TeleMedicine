@@ -80,6 +80,12 @@ async def test_doctor_verification_and_comment_flow(ac: AsyncClient, db_session:
     )
     assert verify_doctor.status_code == 200
     assert verify_doctor.json()['is_verified_doctor'] is True
+    assert len(verify_doctor.json()['qualification_documents']) == 1
+
+    public_profile = await ac.get(f'/doctors/{doctor_id}')
+    assert public_profile.status_code == 200
+    assert public_profile.json()['is_verified_doctor'] is True
+    assert 'qualification_documents' not in public_profile.json()
 
     comment_after_verify = await ac.post(
         f'/questions/{question_id}/comments',

@@ -1,232 +1,148 @@
 # Frontend Pages Documentation
 
-## 1. Scope and Goal
+## Scope
 
-Документ описывает все страницы frontend, которые уже реализованы в проекте:
+This document describes the runtime frontend pages that are actually used by the current MVP build. Interactive pages are native React pages; Stitch exports are kept only as reference assets.
 
-- какие страницы есть;
-- по каким URL они доступны;
-- откуда берутся (native React или Stitch export);
-- где лежат исходные и сгенерированные файлы;
-- как обновлять/добавлять новые страницы безопасно.
+Related docs:
 
----
+- `docs/ROUTES_AND_UX_MAP.md`
+- `docs/FORM_VALIDATION.md`
+- `docs/STITCH_MIGRATION_PLAN.md`
 
-## 2. Current Runtime Routing
+## Runtime routing model
 
-Маршрутизация сделана вручную в `src/main.jsx` через `window.location.pathname`.
+- routing entrypoint: `src/main.jsx`
+- router implementation: `src/router.jsx`
+- access guards: `src/RouteGuards.jsx`
+- auth/session state: `src/auth/AuthContext.jsx`
 
-### Route map
+Routes are grouped into:
 
-| URL path | Page type | Source |
-|---|---|---|
-| `/` | Native React page | `src/App.jsx` |
-| `/doctor-directory-with-filters-ru` | Independent Stitch page | `public/stitch/doctor-directory-with-filters-ru.html` |
-| `/doctor-public-profile-ru` | Independent Stitch page | `public/stitch/doctor-public-profile-ru.html` |
-| `/public-questions-feed-ru` | Independent Stitch page | `public/stitch/public-questions-feed-ru.html` |
-| `/login-desktop-ru` | Independent Stitch page | `public/stitch/login-desktop-ru.html` |
-| `/registration-desktop-ru` | Independent Stitch page | `public/stitch/registration-desktop-ru.html` |
+- `public`
+- `guest`
+- `protected`
 
----
+Unknown paths render the explicit `/404` page.
 
-## 3. Page Inventory
+## Page inventory
 
-## 3.1 Main Landing (native)
+### Landing
 
-- **Route:** `/`
-- **Implementation:** full native React/JSX (no iframe)
-- **Files:**
-  - `src/App.jsx`
-  - `src/App.css`
+- route: `/`
+- file: `src/App.jsx`
+- role: public discovery entrypoint
+- main actions: go to doctors, questions, login, registration, account/admin
 
----
+### Login
 
-## 3.2 Doctor Directory with Filters (RU)
+- routes: `/login-desktop-ru`, `/login`
+- file: `src/LoginDesktopPage.jsx`
+- role: guest-only
+- backend contract: `POST /api/v1/auth/login`
+- notes: supports `returnTo`, `registered`, `logged_out`
 
-- **Stitch screen ID:** `9871202d4c1b4b46a0fb6bb7af520bdf`
-- **Route:** `/doctor-directory-with-filters-ru`
-- **Wrapper component:** `src/DoctorDirectoryWithFiltersPage.jsx`
-- **Served HTML:** `public/stitch/doctor-directory-with-filters-ru.html`
-- **Preview image:** `public/stitch/doctor-directory-with-filters-ru.png`
-- **Raw artifacts:**
-  - `stitch/raw/doctor-directory-with-filters-ru-screen-code-response.json`
-  - `stitch/raw/doctor-directory-with-filters-ru-screen-image-response.json`
-  - `stitch/raw/doctor-directory-with-filters-ru.html`
-  - `stitch/raw/doctor-directory-with-filters-ru-hosted-urls.txt`
+### Patient registration
 
----
+- routes: `/registration-desktop-ru`, `/register`
+- file: `src/RegistrationDesktopPage.jsx`
+- role: guest-only
+- backend contract: `POST /api/v1/auth/register/patient`
+- notes: redirects to login with `registered=1`
 
-## 3.3 Doctor Public Profile (RU)
+### Current user account
 
-- **Stitch screen ID:** `d4ff542a39c448f9803dd23cc14d2a32`
-- **Route:** `/doctor-public-profile-ru`
-- **Wrapper component:** `src/DoctorPublicProfilePage.jsx`
-- **Served HTML:** `public/stitch/doctor-public-profile-ru.html`
-- **Preview image:** `public/stitch/doctor-public-profile-ru.png`
-- **Raw artifacts:**
-  - `stitch/raw/doctor-public-profile-ru-screen-code-response.json`
-  - `stitch/raw/doctor-public-profile-ru-screen-image-response.json`
-  - `stitch/raw/doctor-public-profile-ru.html`
-  - `stitch/raw/doctor-public-profile-ru-hosted-urls.txt`
+- routes: `/account`, `/profile`
+- file: `src/AccountPage.jsx`
+- role: protected
+- backend contracts:
+  - `GET /api/v1/auth/me`
+  - `PATCH /api/v1/auth/me`
+  - `POST /api/v1/auth/change-password`
+  - `POST /api/v1/auth/logout`
+  - `GET /api/v1/auth/me/documents`
+  - `POST /api/v1/doctors/me/documents`
 
----
+### Admin moderation
 
-## 3.4 Public Questions Feed (RU)
+- routes: `/admin-doctor-moderation`, `/admin`
+- file: `src/AdminDoctorModerationPage.jsx`
+- role: protected `admin/superuser`
+- backend contracts:
+  - `GET /api/v1/admin/doctors/pending`
+  - `GET /api/v1/admin/doctors/{doctor_id}`
+  - `PATCH /api/v1/admin/doctors/{doctor_id}/verify`
+  - `GET /api/v1/admin/documents/{document_id}`
 
-- **Stitch screen ID:** `a179243b938345b2a10fb4d7608e0a5e`
-- **Route:** `/public-questions-feed-ru`
-- **Wrapper component:** `src/PublicQuestionsFeedPage.jsx`
-- **Served HTML:** `public/stitch/public-questions-feed-ru.html`
-- **Preview image:** `public/stitch/public-questions-feed-ru.png`
-- **Raw artifacts:**
-  - `stitch/raw/public-questions-feed-ru-screen-code-response.json`
-  - `stitch/raw/public-questions-feed-ru-screen-image-response.json`
-  - `stitch/raw/public-questions-feed-ru.html`
-  - `stitch/raw/public-questions-feed-ru-hosted-urls.txt`
+### Doctor directory
 
----
+- routes: `/doctor-directory-with-filters-ru`, `/doctors`
+- file: `src/DoctorDirectoryWithFiltersPage.jsx`
+- role: public
+- backend contracts:
+  - `GET /api/v1/doctors/`
+  - `GET /api/v1/specializations/`
 
-## 3.5 Login (Desktop)
+### Doctor public profile
 
-- **Stitch screen ID:** `14fe5d2debf248baabc172593526281e`
-- **Route:** `/login-desktop-ru`
-- **Wrapper component:** `src/LoginDesktopPage.jsx`
-- **Served HTML:** `public/stitch/login-desktop-ru.html`
-- **Preview image:** `public/stitch/login-desktop-ru.png`
-- **Raw artifacts:**
-  - `stitch/raw/login-desktop-ru-screen-code-response.json`
-  - `stitch/raw/login-desktop-ru-screen-image-response.json`
-  - `stitch/raw/login-desktop-ru.html`
-  - `stitch/raw/login-desktop-ru-hosted-urls.txt`
-- **Manual adjustment (important):**
-  - удалён блок social login (`Или продолжить с`, `Google`, `ВКонтакте`) по требованию.
+- route: `/doctor-public-profile-ru?doctor_id=<id>`
+- file: `src/DoctorPublicProfilePage.jsx`
+- role: public
+- backend contract: `GET /api/v1/doctors/{doctor_id}`
+- note: only public doctor fields are rendered; qualification documents stay hidden
 
----
+### Public questions feed
 
-## 3.6 Registration (Desktop)
+- routes: `/public-questions-feed-ru`, `/questions`
+- file: `src/PublicQuestionsFeedPage.jsx`
+- role: public
+- backend contracts:
+  - `GET /api/v1/questions/`
+  - `GET /api/v1/questions/{question_id}`
+  - `POST /api/v1/questions/`
+  - `POST /api/v1/questions/{question_id}/comments`
+- notes:
+  - patient can create a question inline;
+  - only verified doctors can answer;
+  - login/registration CTAs preserve `returnTo`.
 
-- **Stitch screen ID:** `5f926a656fa04515b7c0a195cbca6953`
-- **Route:** `/registration-desktop-ru`
-- **Wrapper component:** `src/RegistrationDesktopPage.jsx`
-- **Served HTML:** `public/stitch/registration-desktop-ru.html`
-- **Preview image:** `public/stitch/registration-desktop-ru.png`
-- **Raw artifacts:**
-  - `stitch/raw/registration-desktop-ru-screen-code-response.json`
-  - `stitch/raw/registration-desktop-ru-screen-image-response.json`
-  - `stitch/raw/registration-desktop-ru.html`
-  - `stitch/raw/registration-desktop-ru-hosted-urls.txt`
+### Not found
 
----
+- route: `/404`
+- file: `src/NotFoundPage.jsx`
+- role: public fallback page
 
-## 4. Technical Pattern Used for Stitch Pages
+## Native React migration status
 
-Каждая Stitch-страница реализована одинаково:
+The following former Stitch-first screens are now fully native React runtime pages:
 
-1. React wrapper-компонент с полноэкранным `iframe`.
-2. `iframe` указывает на `public/stitch/<slug>.html`.
-3. Route добавляется в `pageByPath` внутри `src/main.jsx`.
-4. PNG хранится рядом в `public/stitch/<slug>.png` для reference.
+- `login-desktop-ru`
+- `registration-desktop-ru`
+- `doctor-directory-with-filters-ru`
+- `doctor-public-profile-ru`
+- `public-questions-feed-ru`
 
-Плюсы текущего подхода:
+No runtime `iframe` wrappers remain for these screens.
 
-- быстрое подключение новых экранов;
-- минимум риска сломать текущий native layout;
-- 1:1 визуал относительно Stitch export.
+## Stitch asset policy
 
-Ограничения:
+- `public/stitch/` keeps exported HTML/PNG reference assets.
+- `stitch/raw/` keeps raw Stitch artifacts.
+- these files are not part of runtime routing or runtime interactivity.
 
-- экран внутри `iframe` сложнее интегрировать с общими React state/router;
-- поведение ограничено самим Stitch HTML;
-- для тесной интеграции нужно переводить страницу в native JSX.
+## Operational checks
 
----
-
-## 5. Folder Conventions
-
-### `public/stitch/`
-
-Хранит runtime-ассеты, которые реально отдаются браузеру:
-
-- `*.html` — stitched страницы;
-- `*.png` — скриншоты для reference.
-
-### `stitch/raw/`
-
-Хранит артефакты импорта из Stitch:
-
-- `*-screen-code-response.json`
-- `*-screen-image-response.json`
-- `*.html` (сырой скачанный HTML)
-- `*-hosted-urls.txt` (источник URL).
-
----
-
-## 6. How to Add a New Stitch Page
-
-1. Получить code/image payload через Stitch MCP (`get_screen_code`, `get_screen_image`).
-2. Извлечь `htmlCode.downloadUrl` и `screenshot.downloadUrl`.
-3. Скачать файлы через `curl -L`:
-   - `stitch/raw/<slug>.html`
-   - `public/stitch/<slug>.png`
-4. Скопировать HTML в runtime:
-   - `public/stitch/<slug>.html`
-5. Если нужно, применить ручные правки к HTML (как с social login).
-6. Добавить wrapper-компонент `src/<PageName>.jsx`.
-7. Добавить route в `src/main.jsx`.
-8. Обновить этот документ + `README`.
-9. Проверить:
-   - `npm run build`
-   - `docker compose up --build -d --no-deps frontend`
-   - `curl -I http://localhost:5173/stitch/<slug>.html`
-   - `curl -I http://localhost:5173/<route>`.
-
----
-
-## 7. Runbook (local)
-
-### Dev
+Current frontend verification commands:
 
 ```bash
 cd frontend
-npm run dev
-```
-
-### Production build check
-
-```bash
-cd frontend
+npm run test:smoke
+npm run lint
 npm run build
 ```
 
-### Publish frontend container only
+For full stack verification from the repository root:
 
 ```bash
-cd /Users/artemgavrilov/Desktop/Работа/teleMed
-docker compose up --build -d --no-deps frontend
+docker compose up --build
 ```
-
----
-
-## 8. Known Operational Note
-
-В проекте может возникать конфликт порта `8000` при полном `docker compose up --build -d` из-за backend.  
-Для задач только по frontend использовать перезапуск **только frontend**:
-
-```bash
-docker compose up --build -d --no-deps frontend
-```
-
----
-
-## 9. Key Files
-
-- Routing entry: `src/main.jsx`
-- Native landing: `src/App.jsx`
-- Stitch wrappers:
-  - `src/DoctorDirectoryWithFiltersPage.jsx`
-  - `src/DoctorPublicProfilePage.jsx`
-  - `src/PublicQuestionsFeedPage.jsx`
-  - `src/LoginDesktopPage.jsx`
-  - `src/RegistrationDesktopPage.jsx`
-- Runtime stitch assets: `public/stitch/`
-- Raw stitch artifacts: `stitch/raw/`

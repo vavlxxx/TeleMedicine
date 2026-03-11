@@ -1,84 +1,74 @@
 # TeleMedicine Frontend
 
-React + Vite frontend for the telemedicine landing page.
+React + Vite frontend for the telemedicine MVP.
 
-Full pages documentation:
+## Runtime routes
 
-- `docs/PAGES_DOCUMENTATION.md`
+- `/` - landing
+- `/login-desktop-ru` and `/login` - guest login
+- `/registration-desktop-ru` and `/register` - guest patient registration
+- `/doctor-directory-with-filters-ru` and `/doctors` - public doctor directory
+- `/doctor-public-profile-ru?doctor_id=<id>` - public doctor profile
+- `/public-questions-feed-ru` and `/questions` - public Q&A feed
+- `/account` and `/profile` - protected current-user page
+- `/admin-doctor-moderation` and `/admin` - protected admin moderation page
+- `/404` - explicit not-found page
 
-The first page is implemented as native React JSX (no iframe) in `src/App.jsx` based on the Stitch screen:
-
-- Project: `10685311712153327451`
-- Screen: `272e37c4893c43be986b667eb243f046`
-
-Independent Stitch-based page:
-
-- `Doctor Directory with Filters (RU)` (`9871202d4c1b4b46a0fb6bb7af520bdf`)
-- Route: `/doctor-directory-with-filters-ru`
-- Hosted export files:
-  - `public/stitch/doctor-directory-with-filters-ru.html`
-  - `public/stitch/doctor-directory-with-filters-ru.png`
-
-Independent Stitch-based page:
-
-- `Doctor Public Profile (RU)` (`d4ff542a39c448f9803dd23cc14d2a32`)
-- Route: `/doctor-public-profile-ru`
-- Hosted export files:
-  - `public/stitch/doctor-public-profile-ru.html`
-  - `public/stitch/doctor-public-profile-ru.png`
-
-Independent Stitch-based page:
-
-- `Public Questions Feed (RU)` (`a179243b938345b2a10fb4d7608e0a5e`)
-- Route: `/public-questions-feed-ru`
-- Hosted export files:
-  - `public/stitch/public-questions-feed-ru.html`
-  - `public/stitch/public-questions-feed-ru.png`
-
-Independent Stitch-based page:
-
-- `Вход в систему (Desktop)` (`14fe5d2debf248baabc172593526281e`)
-- Route: `/login-desktop-ru`
-- Hosted export files:
-  - `public/stitch/login-desktop-ru.html`
-  - `public/stitch/login-desktop-ru.png`
-- Adjustment:
-  - removed extra `Войти через` social login block from the stitched HTML
-
-Independent Stitch-based page:
-
-- `Регистрация (Desktop)` (`5f926a656fa04515b7c0a195cbca6953`)
-- Route: `/registration-desktop-ru`
-- Hosted export files:
-  - `public/stitch/registration-desktop-ru.html`
-  - `public/stitch/registration-desktop-ru.png`
+Route and UX details are documented in `docs/ROUTES_AND_UX_MAP.md`.
 
 ## Run
 
 ```bash
-npm install
 npm run dev
 ```
 
-## Build
+The default proxy expects backend at `http://localhost:8000`.
+
+## Frontend verification
 
 ```bash
+npm run test:smoke
+npm run lint
 npm run build
 ```
 
-## Stitch Screen Sync
+### Current frontend test strategy
 
-Download Stitch screen payload + hosted HTML/PNG into this project:
+- use `node:test` smoke coverage for critical integration contracts in `smoke/`;
+- keep the smoke suite focused on API client auth/refresh/logout behavior and routing helpers;
+- rely on backend integration tests for API-level end-to-end coverage of auth, moderation, upload, and Q&A flows;
+- add a full browser E2E stack only when the UI contracts stabilize enough to justify the maintenance cost.
 
-```bash
-STITCH_API_KEY="<your-api-key>" npm run fetch:stitch
-```
+## Local env
 
-Output files:
+- `VITE_BACKEND_PROXY_TARGET`
+- `VITE_API_BASE_URL`
 
-- `stitch/raw/screen-code-response.json`
-- `stitch/raw/screen-image-response.json`
-- `stitch/raw/telehealth-landing-ru.html`
-- `stitch/raw/hosted-urls.txt`
-- `public/stitch/telehealth-landing-ru.html`
-- `public/stitch/telehealth-landing-ru.png`
+The checked-in example is `frontend/.env.example`.
+
+## Frontend auth model
+
+- access token is kept only in React memory inside `src/auth/AuthContext.jsx`;
+- refresh token stays in the backend-managed HttpOnly cookie;
+- on app bootstrap the frontend calls `refreshSession()` to restore the session after a reload;
+- protected API calls use `credentials: 'include'` and retry once after a `401` by calling refresh;
+- logout clears the in-memory access token and relies on backend refresh-session revocation.
+
+## Page architecture
+
+- routing is implemented in `src/main.jsx` with a lightweight custom router in `src/router.jsx`;
+- role guards live in `src/RouteGuards.jsx`;
+- API contracts are centralized in `src/api/client.js`;
+- interactive runtime pages are native React pages, not Stitch iframe wrappers.
+
+Detailed page inventory is in `docs/PAGES_DOCUMENTATION.md`.
+
+## Stitch assets
+
+`public/stitch/` and `stitch/raw/` remain only as visual reference assets for migrated screens. Runtime pages no longer depend on `iframe` wrappers for login, registration, directory, profile, or Q&A.
+
+## Known MVP limitations
+
+- public runtime still exposes only patient registration; doctor registration UI is postponed even though the backend endpoint exists;
+- there is no full Playwright/Cypress browser E2E stack yet;
+- manual browser QA for the full happy-path and error matrix still has to be repeated before release sign-off.
