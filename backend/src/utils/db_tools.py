@@ -1,12 +1,50 @@
 from typing import Iterable
 
 from sqlalchemy import Connection, inspect, text
-from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
+
+from src.repos import (
+    DoctorDocumentRepo,
+    QuestionCommentRepo,
+    QuestionRepo,
+    RefreshSessionRepo,
+    SpecializationRepo,
+    UserRepo,
+)
 
 from src.models.base import Base
 from src.utils.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+class DBManager:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+        self.users = UserRepo(session)
+        self.refresh_sessions = RefreshSessionRepo(session)
+        self.specializations = SpecializationRepo(session)
+        self.documents = DoctorDocumentRepo(session)
+        self.questions = QuestionRepo(session)
+        self.question_comments = QuestionCommentRepo(session)
+
+    def add(self, instance) -> None:
+        self.session.add(instance)
+
+    async def delete(self, instance) -> None:
+        await self.session.delete(instance)
+
+    async def flush(self) -> None:
+        await self.session.flush()
+
+    async def refresh(self, instance) -> None:
+        await self.session.refresh(instance)
+
+    async def commit(self) -> None:
+        await self.session.commit()
+
+    async def rollback(self) -> None:
+        await self.session.rollback()
 
 
 class DBHealthChecker:

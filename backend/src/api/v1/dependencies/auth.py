@@ -6,13 +6,12 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
 
-from src.api.v1.dependencies.db import DBSessionDep
+from src.api.v1.dependencies.db import DBDep
 from src.config import settings
 from src.models.auth import RefreshSession, User
 from src.models.enums import JwtTokenType, UserRole
+from src.repos.loaders import USER_PROFILE_OPTIONS
 from src.utils.security import decode_jwt_token, hash_token
 
 bearer_auth = HTTPBearer(auto_error=False)
@@ -41,20 +40,12 @@ def _get_access_token(credentials: HTTPAuthorizationCredentials | None) -> str:
     return credentials.credentials
 
 
-async def _load_user_with_profile(user_id: int, db: DBSessionDep) -> User | None:
-    result = await db.execute(
-        select(User)
-        .where(User.id == user_id)
-        .options(
-            selectinload(User.specializations),
-            selectinload(User.qualification_documents),
-        )
-    )
-    return result.scalar_one_or_none()
+async def _load_user_with_profile(user_id: int, db: DBDep) -> User | None:
+    return await db.users.get_by_id(user_id, *USER_PROFILE_OPTIONS)
 
 
 async def get_current_user(
-    db: DBSessionDep,
+    db: DBDep,
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_auth)],
 ) -> User:
     token = _get_access_token(credentials)
@@ -90,7 +81,7 @@ async def require_verified_doctor(user: Annotated[User, Depends(require_roles(Us
     return user
 
 
-async def get_refresh_context(request: Request, db: DBSessionDep) -> RefreshAuthContext:
+async def get_refresh_context(request: Request, db: DBDep) -> RefreshAuthContext:
     refresh_token = request.cookies.get(settings.auth.refresh_cookie_name)
     if not refresh_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token is required")
@@ -101,12 +92,7 @@ async def get_refresh_context(request: Request, db: DBSessionDep) -> RefreshAuth
     if not jti or not sub:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh token payload")
 
-    refresh_session = await db.scalar(
-        select(RefreshSession).where(
-            RefreshSession.jti == jti,
-            RefreshSession.revoked_at.is_(None),
-        )
-    )
+    refresh_session = await db.refresh_sessions.get_active_by_jti(jti)
     if refresh_session is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh session not found")
 
