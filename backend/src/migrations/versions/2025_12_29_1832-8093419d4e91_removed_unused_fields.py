@@ -56,7 +56,9 @@ def upgrade() -> None:
         "doctor_specializations",
         sa.Column("doctor_id", sa.Integer(), nullable=False),
         sa.Column("specialization_id", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(["doctor_id"], ["users.id"], name=op.f("fk_doctor_specializations_doctor_id_users"), ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["doctor_id"], ["users.id"], name=op.f("fk_doctor_specializations_doctor_id_users"), ondelete="CASCADE"
+        ),
         sa.ForeignKeyConstraint(
             ["specialization_id"],
             ["specializations.id"],
@@ -77,7 +79,12 @@ def upgrade() -> None:
         sa.Column("sha256", sa.String(length=64), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.ForeignKeyConstraint(["doctor_id"], ["users.id"], name=op.f("fk_doctor_qualification_documents_doctor_id_users"), ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["doctor_id"],
+            ["users.id"],
+            name=op.f("fk_doctor_qualification_documents_doctor_id_users"),
+            ondelete="CASCADE",
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_doctor_qualification_documents")),
         sa.UniqueConstraint("stored_file_name", name=op.f("uq_doctor_qualification_documents_stored_file_name")),
         sa.UniqueConstraint("doctor_id", "sha256", name="uq_doctor_document_sha256"),
@@ -101,7 +108,9 @@ def upgrade() -> None:
         sa.Column("revoked_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.ForeignKeyConstraint(["user_id"], ["users.id"], name=op.f("fk_refresh_sessions_user_id_users"), ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["user_id"], ["users.id"], name=op.f("fk_refresh_sessions_user_id_users"), ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_refresh_sessions")),
         sa.UniqueConstraint("jti", name=op.f("uq_refresh_sessions_jti")),
     )
@@ -122,7 +131,9 @@ def upgrade() -> None:
         sa.Column("author_id", sa.Integer(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.ForeignKeyConstraint(["author_id"], ["users.id"], name=op.f("fk_questions_author_id_users"), ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["author_id"], ["users.id"], name=op.f("fk_questions_author_id_users"), ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_questions")),
     )
     op.create_index(op.f("ix_questions_author_id"), "questions", ["author_id"], unique=False)
@@ -135,8 +146,15 @@ def upgrade() -> None:
         sa.Column("author_id", sa.Integer(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
-        sa.ForeignKeyConstraint(["question_id"], ["questions.id"], name=op.f("fk_question_comments_question_id_questions"), ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["author_id"], ["users.id"], name=op.f("fk_question_comments_author_id_users"), ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["question_id"],
+            ["questions.id"],
+            name=op.f("fk_question_comments_question_id_questions"),
+            ondelete="CASCADE",
+        ),
+        sa.ForeignKeyConstraint(
+            ["author_id"], ["users.id"], name=op.f("fk_question_comments_author_id_users"), ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_question_comments")),
     )
     op.create_index(op.f("ix_question_comments_question_id"), "question_comments", ["question_id"], unique=False)

@@ -61,6 +61,4 @@ class RefreshSession(Base):
 
     user: Mapped[User] = relationship(back_populates="refresh_sessions")
 
-    __table_args__ = (
-        Index("ix_refresh_sessions_user_revoked", "user_id", "revoked_at"),
-    )
+    __table_args__ = (Index("ix_refresh_sessions_user_revoked", "user_id", "revoked_at"),)

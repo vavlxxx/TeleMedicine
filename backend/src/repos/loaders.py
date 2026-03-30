@@ -13,9 +13,7 @@ ADMIN_USER_OPTIONS = USER_PROFILE_OPTIONS + (
     selectinload(User.comments),
 )
 
-DOCTOR_DIRECTORY_OPTIONS = (
-    selectinload(User.specializations),
-)
+DOCTOR_DIRECTORY_OPTIONS = (selectinload(User.specializations),)
 
 DOCTOR_DETAIL_OPTIONS = USER_PROFILE_OPTIONS
 
@@ -24,6 +22,4 @@ QUESTION_OPTIONS = (
     selectinload(Question.comments).selectinload(QuestionComment.author),
 )
 
-ANSWER_OPTIONS = (
-    selectinload(QuestionComment.author),
-)
+ANSWER_OPTIONS = (selectinload(QuestionComment.author),)

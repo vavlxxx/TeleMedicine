@@ -13,17 +13,13 @@ PASSWORD_PATTERN = re.compile(r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]
 def normalize_username(username: str) -> str:
     username = username.strip().lower()
     if not USERNAME_PATTERN.fullmatch(username):
-        raise ValueError(
-            "Username must be 4-64 chars and contain only letters, numbers, '.', '_' or '-'."
-        )
+        raise ValueError("Username must be 4-64 chars and contain only letters, numbers, '.', '_' or '-'.")
     return username
 
 
 def validate_password(password: str) -> str:
     if not PASSWORD_PATTERN.fullmatch(password):
-        raise ValueError(
-            "Password must be 10-128 chars and include upper, lower, digit and special character."
-        )
+        raise ValueError("Password must be 10-128 chars and include upper, lower, digit and special character.")
     return password
 
 

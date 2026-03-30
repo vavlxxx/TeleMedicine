@@ -29,7 +29,9 @@ class QuestionRepo(BaseRepo):
         result = await self.session.execute(statement)
         return list(result.scalars().all())
 
-    async def list_filtered(self, offset: int, limit: int, search: str | None, answered: bool | None, *options) -> list[Question]:
+    async def list_filtered(
+        self, offset: int, limit: int, search: str | None, answered: bool | None, *options
+    ) -> list[Question]:
         statement = select(Question)
 
         if search:

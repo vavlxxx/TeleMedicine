@@ -93,7 +93,9 @@ class AdminService(BaseService):
         admin: User,
     ) -> AdminUserListItemDTO:
         if user_id == admin.id:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot change your own activity status")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot change your own activity status"
+            )
 
         user = await self.db.users.get_by_id(user_id, *ADMIN_USER_OPTIONS)
         if user is None:
@@ -130,7 +132,9 @@ class AdminService(BaseService):
             *QUESTION_OPTIONS,
         )
         total = await self.db.questions.count_filtered(search=search, answered=answered)
-        return AdminQuestionsResponseDTO(items=[to_admin_question_item(question) for question in questions], total=total)
+        return AdminQuestionsResponseDTO(
+            items=[to_admin_question_item(question) for question in questions], total=total
+        )
 
     async def delete_question(self, question_id: int) -> Response:
         question = await self.db.questions.get_by_id(question_id)

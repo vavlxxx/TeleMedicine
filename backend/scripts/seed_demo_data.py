@@ -284,9 +284,7 @@ async def ensure_doctor_documents(session, doctor: User) -> None:
 
 
 async def sync_doctor_specializations(session, doctor: User, specialization_ids: list[int]) -> None:
-    await session.execute(
-        delete(doctor_specializations).where(doctor_specializations.c.doctor_id == doctor.id)
-    )
+    await session.execute(delete(doctor_specializations).where(doctor_specializations.c.doctor_id == doctor.id))
     await session.execute(
         insert(doctor_specializations),
         [{"doctor_id": doctor.id, "specialization_id": specialization_id} for specialization_id in specialization_ids],

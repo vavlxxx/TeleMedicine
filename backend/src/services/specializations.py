@@ -21,7 +21,9 @@ class SpecializationService(BaseService):
         await self.db.refresh(specialization)
         return SpecializationDTO.model_validate(specialization)
 
-    async def update_specialization(self, specialization_id: int, payload: SpecializationUpdateDTO) -> SpecializationDTO:
+    async def update_specialization(
+        self, specialization_id: int, payload: SpecializationUpdateDTO
+    ) -> SpecializationDTO:
         specialization = await self.db.specializations.get_by_id(specialization_id)
         if specialization is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Specialization not found")

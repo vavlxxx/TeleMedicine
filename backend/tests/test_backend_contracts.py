@@ -105,7 +105,9 @@ async def test_refresh_cookie_restores_session_for_new_client_after_reload(ac: A
 
 
 @pytest.mark.asyncio
-async def test_doctor_registration_validates_document_edge_cases(ac: AsyncClient, db_session: AsyncSession, monkeypatch) -> None:
+async def test_doctor_registration_validates_document_edge_cases(
+    ac: AsyncClient, db_session: AsyncSession, monkeypatch
+) -> None:
     admin = await _create_user(
         db_session,
         username="admin_uploads",
@@ -170,7 +172,9 @@ async def test_doctor_registration_validates_document_edge_cases(ac: AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_admin_moderation_contract_for_doctor_without_documents(ac: AsyncClient, db_session: AsyncSession) -> None:
+async def test_admin_moderation_contract_for_doctor_without_documents(
+    ac: AsyncClient, db_session: AsyncSession
+) -> None:
     await _create_user(
         db_session,
         username="admin_moderation",
@@ -283,7 +287,9 @@ async def test_directory_profile_and_question_flow_contracts(ac: AsyncClient, db
 
 
 @pytest.mark.asyncio
-async def test_specialization_crud_and_doctor_profile_contract_fields(ac: AsyncClient, db_session: AsyncSession) -> None:
+async def test_specialization_crud_and_doctor_profile_contract_fields(
+    ac: AsyncClient, db_session: AsyncSession
+) -> None:
     await _create_user(
         db_session,
         username="admin_specs",

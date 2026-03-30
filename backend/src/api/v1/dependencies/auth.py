@@ -109,7 +109,9 @@ async def get_refresh_context(request: Request, db: DBDep) -> RefreshAuthContext
     try:
         user_id = int(sub)
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user id in refresh token") from exc
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user id in refresh token"
+        ) from exc
 
     if refresh_session.user_id != user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid refresh session subject")

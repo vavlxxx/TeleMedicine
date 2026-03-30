@@ -44,6 +44,4 @@ class DoctorQualificationDocument(Base):
 
     doctor: Mapped[User] = relationship(back_populates="qualification_documents")
 
-    __table_args__ = (
-        UniqueConstraint("doctor_id", "sha256", name="uq_doctor_document_sha256"),
-    )
+    __table_args__ = (UniqueConstraint("doctor_id", "sha256", name="uq_doctor_document_sha256"),)

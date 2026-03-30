@@ -90,7 +90,9 @@ async def update_my_profile(payload: ProfileUpdateRequest, db: DBDep, current_us
 
 
 @router.post("/change-password", response_model=MessageResponseDTO)
-async def change_password(payload: PasswordChangeRequest, db: DBDep, current_user: CurrentUserDep) -> MessageResponseDTO:
+async def change_password(
+    payload: PasswordChangeRequest, db: DBDep, current_user: CurrentUserDep
+) -> MessageResponseDTO:
     return await AuthService(db).change_password(payload=payload, current_user=current_user)
 
 

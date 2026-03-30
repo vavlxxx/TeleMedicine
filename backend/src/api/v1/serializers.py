@@ -46,7 +46,9 @@ def to_doctor_list_item(user: User) -> DoctorListItemDTO:
         first_name=user.first_name,
         last_name=user.last_name,
         is_verified_doctor=user.is_verified_doctor,
-        specializations=[to_specialization_dto(spec) for spec in sorted(user.specializations, key=lambda item: item.name.lower())],
+        specializations=[
+            to_specialization_dto(spec) for spec in sorted(user.specializations, key=lambda item: item.name.lower())
+        ],
     )
 
 
@@ -54,7 +56,8 @@ def to_doctor_detail(user: User) -> DoctorDetailDTO:
     return DoctorDetailDTO(
         **to_doctor_list_item(user).model_dump(),
         qualification_documents=[
-            to_document_dto(item) for item in sorted(user.qualification_documents, key=lambda doc: doc.created_at, reverse=True)
+            to_document_dto(item)
+            for item in sorted(user.qualification_documents, key=lambda doc: doc.created_at, reverse=True)
         ],
     )
 

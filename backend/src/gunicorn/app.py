@@ -18,11 +18,7 @@ class GunicornApp(BaseApplication):
 
     @property
     def config_options(self) -> dict:
-        return {
-            k: v
-            for k, v in self.options.items()
-            if k in self.cfg.settings and v is not None
-        }
+        return {k: v for k, v in self.options.items() if k in self.cfg.settings and v is not None}
 
     def load(self):
         return self.application

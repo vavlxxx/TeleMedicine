@@ -120,7 +120,9 @@ class AuthService(BaseService):
         documents: list[UploadFile],
     ) -> UserProfileDTO:
         if not documents:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="At least one qualification file is required")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="At least one qualification file is required"
+            )
         if len(documents) > settings.upload.max_files_per_request:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -133,7 +135,9 @@ class AuthService(BaseService):
 
         specializations = await self.db.specializations.get_by_ids(payload.specialization_ids)
         if len(specializations) != len(payload.specialization_ids):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="One or more specialization ids are invalid")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="One or more specialization ids are invalid"
+            )
 
         saved_file_names: list[str] = []
         try:
@@ -240,6 +244,8 @@ class AuthService(BaseService):
 
     async def get_my_documents(self, current_user: User) -> list[DoctorQualificationDocumentDTO]:
         if current_user.role != UserRole.DOCTOR:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only doctors can view qualification documents")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Only doctors can view qualification documents"
+            )
         documents = sorted(current_user.qualification_documents, key=lambda doc: doc.created_at, reverse=True)
         return [to_document_dto(item) for item in documents]
