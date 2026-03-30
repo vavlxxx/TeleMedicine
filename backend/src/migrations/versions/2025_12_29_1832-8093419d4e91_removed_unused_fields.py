@@ -20,7 +20,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    user_role_enum = postgresql.ENUM("superuser", "admin", "patient", "doctor", name="user_role")
+    bind = op.get_bind()
+    user_role_enum = postgresql.ENUM("superuser", "admin", "patient", "doctor", name="user_role", create_type=False)
+    user_role_enum.create(bind, checkfirst=True)
 
     op.create_table(
         "users",
@@ -142,6 +144,9 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    bind = op.get_bind()
+    user_role_enum = postgresql.ENUM("superuser", "admin", "patient", "doctor", name="user_role", create_type=False)
+
     op.drop_index(op.f("ix_question_comments_author_id"), table_name="question_comments")
     op.drop_index(op.f("ix_question_comments_question_id"), table_name="question_comments")
     op.drop_table("question_comments")
@@ -166,4 +171,4 @@ def downgrade() -> None:
     op.drop_index(op.f("ix_users_username"), table_name="users")
     op.drop_table("users")
 
-    op.execute("DROP TYPE IF EXISTS user_role")
+    user_role_enum.drop(bind, checkfirst=True)

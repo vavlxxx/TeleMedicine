@@ -6,3 +6,7 @@ __pycache__
 README.md
 logs
 uploads
+.env
+.env.*
+!.env.template
+!.env.postgres.template

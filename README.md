@@ -1,112 +1,372 @@
 # TeleMedicine MVP
 
-Monorepo with a FastAPI backend and a React/Vite frontend for the first telemedicine MVP.
+TeleMedicine MVP — это монорепозиторий с backend на FastAPI и frontend на React/Vite.
 
-## What is implemented
+## Состав проекта
 
-- patient registration and login;
-- JWT auth with in-memory access token on the frontend and rotating refresh token in an HttpOnly cookie;
-- current-user profile, profile update, password change, logout;
-- doctor registration backend flow with qualification document upload;
-- admin/superuser moderation queue for doctor verification;
-- public doctor directory and public doctor profile;
-- public Q&A feed where patients create questions and only verified doctors can answer.
+- `backend/` — API, бизнес-логика, модели, миграции, тесты
+- `frontend/` — пользовательский интерфейс и smoke-тесты
+- `docker-compose.yaml` — локальный запуск сервисов
+- `nginx.conf` — reverse proxy между браузером, frontend и backend
+- `docs/ARCHITECTURE.md` — краткая схема архитектуры
+- `docs/PRODUCTION_RUNBOOK.md` — краткий runbook для production
 
-## Repository layout
+## Что умеет приложение
 
-- `backend/` - FastAPI application, migrations, pytest suite.
-- `frontend/` - React/Vite SPA with public, guest, protected, and admin routes.
-- `docs/PRODUCTION_RUNBOOK.md` - production deployment checklist.
-- `docs/RELEASE_READINESS.md` - acceptance summary, deferred tasks, and release limitations.
+- регистрация и логин пациента
+- регистрация врача с загрузкой подтверждающих документов
+- refresh/access JWT-аутентификация
+- профиль пользователя и смена пароля
+- каталог врачей и публичный профиль врача
+- публичная лента вопросов
+- ответы на вопросы от подтверждённых врачей
+- административная модерация врачей
 
-## Local start
+## Архитектура запуска
 
-Run from the repository root:
+Во внешний мир опубликован только `nginx` на порту `80`.
+
+Внутри сети Docker работают:
+
+- `postgres` — `5432`
+- `backend` — `8000`
+- `frontend` — `5173`
+
+Следствия:
+
+- PostgreSQL не доступен с хоста напрямую
+- backend не доступен с хоста напрямую
+- frontend не доступен с хоста напрямую как отдельный сервис
+- весь внешний HTTP-трафик идёт только через `nginx`
+
+Основные маршруты:
+
+- `http://localhost/` → frontend
+- `http://localhost/api/...` → backend
+- `http://localhost/health` → healthcheck backend
+- `http://localhost/docs` → Swagger в режиме `DEV`
+
+## Текущее состояние и найденные проблемы
+
+### Миграции
+
+Подозрение про отсутствие миграций для текущих таблиц не подтвердилось.
+
+Текущие таблицы backend:
+
+- `users`
+- `refresh_sessions`
+- `specializations`
+- `doctor_specializations`
+- `doctor_qualification_documents`
+- `questions`
+- `question_comments`
+
+Они уже создаются миграцией `backend/src/migrations/versions/2025_12_29_1832-8093419d4e91_removed_unused_fields.py`.
+
+При этом есть две реальные проблемы в миграционном слое:
+
+1. Ревизия `backend/src/migrations/versions/2026_02_15_2152-2094603e316e_added_basic_role_model.py` пустая. Это не ломает запуск, но это плохой сигнал по дисциплине миграций.
+2. Первая миграция была неустойчива к уже существующему enum `user_role` в PostgreSQL. Это исправлено через `checkfirst=True`.
+
+### Конфигурация
+
+Исправленные проблемы:
+
+1. Локальные `.env` файлы могли попадать внутрь Docker image. Это небезопасно и даёт расхождение между ожидаемым runtime и тем, что реально собрано. Исправлено через `backend/.dockerignore` и `frontend/.dockerignore`.
+2. `CFG_CORS__ALLOWED_ORIGINS` в текущей модели настроек должен задаваться как JSON-массив. Формат строки через запятую здесь не работает стабильно из-за поведения `pydantic-settings` на вложенных полях.
+3. Загрузки должны храниться на хосте, а не внутри эфемерной файловой системы контейнера. Сейчас они сохраняются в `backend/uploads`.
+4. Frontend внутри Docker всё ещё запускается через `vite dev`. Для локальной разработки это нормально, для production — нет.
+
+### Тестовый контур
+
+Есть один важный архитектурный нюанс:
+
+- backend-тесты создают схему напрямую через ORM (`Base.metadata.create_all()`), а не через Alembic
+- поэтому будущий разрыв между моделями и миграциями может не быть замечен тестами автоматически
+
+Это не блокирует текущую работу, но это реальный технический долг.
+
+## Подготовка окружения
+
+### 1. Backend env
+
+Создай локальный файл `backend/.env` на основе шаблона:
+
+```bash
+cp backend/.env.template backend/.env
+```
+
+PowerShell:
+
+```powershell
+Copy-Item backend/.env.template backend/.env
+```
+
+Обязательные поля:
+
+- `CFG_DB__USER`
+- `CFG_DB__PASSWORD`
+- `CFG_AUTH__SECRET_KEY`
+
+Для Docker-режима backend должен ходить в PostgreSQL по адресу `postgres:5432`.
+
+### 2. PostgreSQL env
+
+Создай локальный файл `backend/.env.postgres`:
+
+```bash
+cp backend/.env.postgres.template backend/.env.postgres
+```
+
+PowerShell:
+
+```powershell
+Copy-Item backend/.env.postgres.template backend/.env.postgres
+```
+
+Значения `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` должны совпадать с backend-настройками подключения к базе.
+
+### 3. Frontend env
+
+Создай локальный файл `frontend/.env`:
+
+```bash
+cp frontend/.env.example frontend/.env
+```
+
+PowerShell:
+
+```powershell
+Copy-Item frontend/.env.example frontend/.env
+```
+
+## Локальный запуск приложения
+
+Из корня проекта:
 
 ```bash
 docker compose up --build
 ```
 
-Published services:
-
-- frontend: `http://localhost:5173`
-- backend: `http://localhost:8000`
-- health: `http://localhost:8000/health`
-- postgres: `localhost:6432`
-
-Bootstrap superuser from `backend/.env.docker`:
-
-- username: `superadmin`
-- password: `SuperAdmin!123`
-
-## Verification commands
-
-Backend tests:
+Проверка после старта:
 
 ```bash
-docker compose run --rm backend-test poetry run python -m pytest
+curl http://localhost/health
 ```
 
-Frontend smoke, lint, build:
+В браузере:
+
+- главная страница: `http://localhost/`
+- Swagger: `http://localhost/docs`
+
+Остановка:
+
+```bash
+docker compose down
+```
+
+Полная очистка с томами базы:
+
+```bash
+docker compose down -v
+```
+
+## Работа с приложением
+
+### Основной пользовательский сценарий
+
+1. Открыть `http://localhost/`
+2. Зарегистрировать пациента или войти существующим пользователем
+3. После логина frontend хранит access token в памяти, а refresh token остаётся в cookie
+4. При перезагрузке страницы frontend восстанавливает сессию через `/api/v1/auth/refresh`
+5. Публичные страницы каталога врачей и вопросов доступны без логина
+6. Административные маршруты доступны только пользователям с ролью `admin` или `superuser`
+
+### Документы врачей
+
+Загрузки сохраняются в:
+
+- внутри контейнера: `/app/uploads/doctor_documents`
+- на хосте: `backend/uploads/doctor_documents`
+
+Это означает, что файлы не пропадут при пересоздании контейнера backend, пока не удалена папка `backend/uploads`.
+
+### Основные API-группы
+
+#### Auth
+
+- `POST /api/v1/auth/register/patient`
+- `POST /api/v1/auth/register/doctor`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/refresh`
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/auth/me`
+- `PATCH /api/v1/auth/me`
+- `POST /api/v1/auth/change-password`
+
+#### Doctors
+
+- `GET /api/v1/doctors/`
+- `GET /api/v1/doctors/{doctor_id}`
+- `POST /api/v1/doctors/me/documents`
+
+#### Admin
+
+- `GET /api/v1/admin/doctors/pending`
+- `GET /api/v1/admin/doctors/{doctor_id}`
+- `PATCH /api/v1/admin/doctors/{doctor_id}/verify`
+- `GET /api/v1/admin/documents/{document_id}`
+
+#### Questions
+
+- `GET /api/v1/questions/`
+- `GET /api/v1/questions/{question_id}`
+- `POST /api/v1/questions/`
+- `POST /api/v1/questions/{question_id}/comments`
+
+## Запуск без Docker
+
+### Backend
+
+```bash
+cd backend
+poetry install
+poetry run alembic upgrade head
+poetry run uvicorn src.main:app --reload
+```
+
+### Frontend
 
 ```bash
 cd frontend
-npm run test:smoke
+npm ci
+npm run dev
+```
+
+## Тесты и локальная валидация
+
+### Backend
+
+```bash
+cd backend
+poetry run pytest -v
+```
+
+### Frontend
+
+```bash
+cd frontend
 npm run lint
+npm run test:smoke
 npm run build
 ```
 
-## Local development env
+Если нужно прогнать backend-тесты внутри контейнера, можно временно заменить команду сервиса `backend` на `poetry run pytest -v`.
 
-Backend local env is documented in `backend/.env.template`. The current local/Docker setup uses:
+## Pre-commit и проверки перед push
 
-- `CFG_DB__HOST`, `CFG_DB__PORT`, `CFG_DB__USER`, `CFG_DB__PASSWORD`, `CFG_DB__NAME`
-- `CFG_APP__MODE`
-- `CFG_AUTH__SECRET_KEY`
-- `CFG_AUTH__ACCESS_TTL_MINUTES`
-- `CFG_AUTH__REFRESH_TTL_DAYS`
-- `CFG_AUTH__COOKIE_SECURE`
-- `CFG_AUTH__COOKIE_SAMESITE`
-- `CFG_CORS__ALLOWED_ORIGINS`
-- `CFG_UPLOAD__MAX_FILE_SIZE_MB`
-- `CFG_UPLOAD__MAX_FILES_PER_REQUEST`
-- `CFG_BOOTSTRAP__SUPERUSER_USERNAME`
-- `CFG_BOOTSTRAP__SUPERUSER_PASSWORD`
-- `CFG_BOOTSTRAP__SUPERUSER_FIRST_NAME`
-- `CFG_BOOTSTRAP__SUPERUSER_LAST_NAME`
+В проекте используется `.pre-commit-config.yaml`.
 
-Frontend local env:
+### Что проверяется на commit
 
-- `VITE_BACKEND_PROXY_TARGET`
-- `VITE_API_BASE_URL`
+На стадии `pre-commit` выполняются:
 
-## Auth flow
+- `trailing-whitespace`
+- `end-of-file-fixer`
+- `check-yaml`
+- `check-added-large-files`
+- `ruff check` для backend
+- `ruff format` для backend
+- `pyright` для backend
 
-1. Frontend calls `POST /api/v1/auth/login`.
-2. Backend returns `access_token` in JSON and sets a rotating `refresh_token` cookie with `HttpOnly`.
-3. Frontend stores the access token only in React memory, never in `localStorage` or `sessionStorage`.
-4. On page load and on `401`, frontend tries `POST /api/v1/auth/refresh` with `credentials: include`.
-5. `POST /api/v1/auth/logout` revokes the refresh session and clears the cookie; frontend drops the in-memory access token.
+### Что проверяется перед push
 
-## Doctor registration and moderation
+На стадии `pre-push` выполняются:
 
-- doctor self-registration is implemented on the backend as multipart `POST /api/v1/auth/register/doctor`;
-- qualification documents are validated by extension, MIME type, file count, and file size;
-- admin moderation UI is available at `/admin-doctor-moderation` for `admin` and `superuser`;
-- admins use `/api/v1/admin/doctors/pending`, `/api/v1/admin/doctors/{doctor_id}`, `/api/v1/admin/doctors/{doctor_id}/verify`, and `/api/v1/admin/documents/{document_id}`;
-- public doctor endpoints never expose qualification documents.
+- `pytest -v` для backend
+- `npm run lint` для frontend
+- `npm run test:smoke` для frontend
 
-## Production notes
+Это соответствует требованию проверять тесты перед отправкой в репозиторий.
 
-- `PROD` mode rejects weak/dev secret keys.
-- `PROD` mode requires `CFG_AUTH__COOKIE_SECURE=true`.
-- `PROD` mode rejects localhost CORS origins.
-- `PROD` mode requires API docs/OpenAPI endpoints to be disabled.
+### Установка pre-commit
 
-Full deployment steps are in `docs/PRODUCTION_RUNBOOK.md`.
+Системный `pre-commit` не обязателен. В этой конфигурации удобнее использовать его из backend venv:
 
-## Current MVP limitations
+```bash
+cd backend
+poetry install
+poetry run python -m pre_commit install
+poetry run python -m pre_commit install --hook-type pre-push
+```
 
-- doctor self-registration UI is postponed; the backend contract is ready, but the public runtime exposes only patient registration;
-- there is no full browser E2E stack yet; frontend coverage is currently smoke-level plus backend integration tests;
-- manual browser QA for all user journeys still has to be repeated before a public release.
+Из корня репозитория можно запускать так:
+
+```bash
+poetry -C backend run python -m pre_commit run --all-files
+poetry -C backend run python -m pre_commit run --all-files --hook-stage pre-push
+```
+
+### Нужен ли глобальный eslint
+
+Нет, не нужен.
+
+Причина:
+
+- hook запускает `npm --prefix frontend run lint`
+- `npm run` использует локальный `eslint` из `frontend/node_modules`
+- достаточно, чтобы в `frontend` были установлены зависимости через `npm ci`
+
+### Есть ли смысл держать JS в pre-commit
+
+Да, смысл есть, но не на стадии `pre-commit`, а на стадии `pre-push`.
+
+Причина:
+
+- frontend в этом репозитории — полноценная часть продукта
+- lint и smoke-тесты frontend важны не меньше backend-проверок
+- но запускать их на каждый commit неудобно и медленно
+
+Поэтому выбран практичный баланс:
+
+- Python-проверки — на `pre-commit`
+- frontend lint и smoke — на `pre-push`
+
+Если команда маленькая и frontend меняется редко, можно оставить только Python hooks локально, а JS полностью доверить CI. Но для этого проекта текущая схема выглядит разумнее.
+
+## CI/CD: что делать дальше
+
+Текущая docker-схема подходит для локального запуска и staging-подготовки.
+
+Для production нужно сделать ещё два шага:
+
+1. собирать frontend как статический bundle
+2. отдавать frontend из `nginx`, а не через `vite dev`
+
+Минимальный pipeline CI/CD должен выполнять:
+
+1. `pre-commit run --all-files`
+2. backend tests
+3. frontend lint
+4. frontend smoke tests
+5. frontend build
+6. docker build
+7. deploy
+
+## Рудиментарные файлы
+
+Файл `INTEGRATION_TODO.md` не используется в рабочем контуре и не нужен для итоговой сборки. В текущем состоянии репозитория его нет, и дальше использовать такие файлы не нужно.
+
+## Полезные файлы
+
+- `README.md`
+- `docker-compose.yaml`
+- `nginx.conf`
+- `backend/Dockerfile`
+- `frontend/Dockerfile`
+- `backend/.env.template`
+- `backend/.env.postgres.template`
+- `frontend/.env.example`
+- `docs/ARCHITECTURE.md`
+- `docs/PRODUCTION_RUNBOOK.md`

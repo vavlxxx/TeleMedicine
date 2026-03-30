@@ -1,4 +1,5 @@
 import pytest
+from pydantic import SecretStr
 
 from src.config import AppSettings, CorsSettings, JwtSettings, Settings
 
@@ -12,7 +13,7 @@ def make_prod_settings(**overrides) -> Settings:
             openapi_url=None,
         ),
         "auth": JwtSettings(
-            secret_key="ProdSecret!1234567890",
+            secret_key=SecretStr("ProdSecret!1234567890"),
             cookie_secure=True,
         ),
         "cors": CorsSettings(
@@ -39,12 +40,12 @@ def test_prod_settings_accept_secure_configuration() -> None:
 )
 def test_prod_settings_reject_weak_or_dev_secret(secret_key: str, expected_message: str) -> None:
     with pytest.raises(ValueError, match=expected_message):
-        make_prod_settings(auth=JwtSettings(secret_key=secret_key, cookie_secure=True))
+        make_prod_settings(auth=JwtSettings(secret_key=SecretStr(secret_key), cookie_secure=True))
 
 
 def test_prod_settings_require_secure_cookie() -> None:
     with pytest.raises(ValueError, match="CFG_AUTH__COOKIE_SECURE"):
-        make_prod_settings(auth=JwtSettings(secret_key="ProdSecret!1234567890", cookie_secure=False))
+        make_prod_settings(auth=JwtSettings(secret_key=SecretStr("ProdSecret!1234567890"), cookie_secure=False))
 
 
 def test_prod_settings_reject_localhost_cors_origins() -> None:

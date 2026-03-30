@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.github
+.vscode
+.env
+.env.*
+!.env.example
+docs
+stitch
+smoke
+README.md
+npm-debug.log*
