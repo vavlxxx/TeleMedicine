@@ -1,0 +1,112 @@
+stages:
+  - build
+  - lint_format_typing_check
+  - migrations
+  - tests
+  - deploy
+  - cleanup
+
+variables:
+  COMPOSE_PROJECT_NAME: telemedicine
+  DOCKER_BUILDKIT: "1"
+
+.prepare_env: &prepare_env
+  before_script:
+    - |
+      set -eu
+
+      write_env_file() {
+        source_value="$1"
+        target_path="$2"
+
+        if [ -z "$source_value" ]; then
+          echo "Missing env variable for ${target_path}" >&2
+          exit 1
+        fi
+
+        mkdir -p "$(dirname "$target_path")"
+
+        if [ -f "$source_value" ]; then
+          cp "$source_value" "$target_path"
+        else
+          printf '%s\n' "$source_value" > "$target_path"
+        fi
+      }
+
+      write_env_file "$MAIN_ENV" "backend/.env"
+      write_env_file "$POSTGRES_ENV" "backend/.env.postgres"
+      write_env_file "$FRONTEND_ENV" "frontend/.env"
+
+build-job:
+  stage: build
+  <<: *prepare_env
+  script:
+    - docker compose build backend frontend
+
+backend-lint-job:
+  stage: lint_format_typing_check
+  <<: *prepare_env
+  script:
+    - docker compose run --rm --no-deps backend poetry run ruff check src tests
+
+backend-format-job:
+  stage: lint_format_typing_check
+  <<: *prepare_env
+  script:
+    - docker compose run --rm --no-deps backend poetry run ruff format --check src tests
+
+backend-typing-job:
+  stage: lint_format_typing_check
+  <<: *prepare_env
+  script:
+    - docker compose run --rm --no-deps backend poetry run pyright
+
+frontend-lint-job:
+  stage: lint_format_typing_check
+  <<: *prepare_env
+  script:
+    - docker compose run --rm --no-deps frontend npm run lint
+
+migrations-job:
+  stage: migrations
+  <<: *prepare_env
+  script:
+    - docker compose up -d postgres
+    - docker compose run --rm --no-deps backend poetry run alembic upgrade head
+
+backend-tests-job:
+  stage: tests
+  <<: *prepare_env
+  script:
+    - docker compose run --rm --no-deps backend poetry run pytest -s -v
+
+frontend-smoke-job:
+  stage: tests
+  <<: *prepare_env
+  script:
+    - docker compose run --rm --no-deps frontend npm run test:smoke
+
+frontend-build-job:
+  stage: tests
+  <<: *prepare_env
+  script:
+    - docker compose run --rm --no-deps frontend npm run build
+
+deploy-job:
+  stage: deploy
+  <<: *prepare_env
+  script:
+    - docker compose up -d --build
+    - docker compose ps
+    - docker compose exec -T nginx nginx -s reload || true
+  only:
+    - main
+
+cleanup-job:
+  stage: cleanup
+  script:
+    - docker compose rm -fsv || true
+    - docker image prune -f
+    - docker builder prune -f --filter "until=72h"
+  when: on_success
+  allow_failure: true

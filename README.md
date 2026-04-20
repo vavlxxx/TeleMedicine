@@ -337,6 +337,33 @@ poetry -C backend run python -m pre_commit run --all-files --hook-stage pre-push
 
 ## CI/CD: что делать дальше
 
+В корне проекта есть `.gitlab-ci.yml` для GitLab CI/CD.
+
+Runner должен иметь доступ к:
+
+- `docker`
+- `docker compose`
+- рабочей директории проекта на сервере, если runner используется для деплоя
+
+В GitLab CI/CD variables должны быть заданы:
+
+- `MAIN_ENV` — содержимое backend env для `backend/.env`
+- `POSTGRES_ENV` — содержимое postgres env для `backend/.env.postgres`
+- `FRONTEND_ENV` — содержимое frontend env для `frontend/.env`
+
+Переменные могут быть как обычными переменными со значением, так и GitLab File variables. Pipeline поддерживает оба варианта.
+
+Порядок pipeline:
+
+1. `build` — сборка backend и frontend Docker images
+2. `lint_format_typing_check` — `ruff`, `ruff format --check`, `pyright`, frontend lint
+3. `migrations` — применение Alembic migrations
+4. `tests` — backend tests, frontend smoke tests, frontend build
+5. `deploy` — `docker compose up -d --build`
+6. `cleanup` — очистка dangling images и старого build cache
+
+Deploy job выполняется только для ветки `main`.
+
 Текущая docker-схема подходит для локального запуска и staging-подготовки.
 
 Для production нужно сделать ещё два шага:
