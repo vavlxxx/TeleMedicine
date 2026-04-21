@@ -74,33 +74,12 @@ h6,
   gap: 12px;
 }
 
-.tm-logo__mark {
-  position: relative;
+.tm-logo__icon {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: linear-gradient(180deg, #3d84ff, #2f6fe8);
+  object-fit: cover;
   box-shadow: 0 10px 24px rgba(47, 111, 232, 0.18);
-}
-
-.tm-logo__cross {
-  position: absolute;
-  background: #ffffff;
-  border-radius: 999px;
-}
-
-.tm-logo__cross--horizontal {
-  top: 15px;
-  left: 8px;
-  width: 18px;
-  height: 4px;
-}
-
-.tm-logo__cross--vertical {
-  top: 8px;
-  left: 15px;
-  width: 4px;
-  height: 18px;
 }
 
 .tm-logo__text {

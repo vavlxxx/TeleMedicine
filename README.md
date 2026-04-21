@@ -1,97 +1,74 @@
-# TeleMedicine MVP
+# TelemedRU
 
-TeleMedicine MVP — это монорепозиторий с backend на FastAPI и frontend на React/Vite.
+TelemedRU — это монорепозиторий, в котором находятся:
 
-## Состав проекта
+- `backend/` на FastAPI + SQLAlchemy + Alembic
+- `frontend/` на React + Vite
+- `docker-compose.yaml` для локального и серверного запуска
+- `nginx.conf` как внешний reverse proxy
+- `.github/workflows/build.yaml` для CI/CD в GitHub Actions
 
-- `backend/` — API, бизнес-логика, модели, миграции, тесты
-- `frontend/` — пользовательский интерфейс и smoke-тесты
-- `docker-compose.yaml` — локальный запуск сервисов
-- `nginx.conf` — reverse proxy между браузером, frontend и backend
-- `docs/ARCHITECTURE.md` — краткая схема архитектуры
-- `docs/PRODUCTION_RUNBOOK.md` — краткий runbook для production
+## Структура репозитория
 
-## Что умеет приложение
-
-- регистрация и логин пациента
-- регистрация врача с загрузкой подтверждающих документов
-- refresh/access JWT-аутентификация
-- профиль пользователя и смена пароля
-- каталог врачей и публичный профиль врача
-- публичная лента вопросов
-- ответы на вопросы от подтверждённых врачей
-- административная модерация врачей
+```text
+.
+|-- .github/workflows/build.yaml
+|-- backend/
+|   |-- src/
+|   |-- tests/
+|   |-- Dockerfile
+|   |-- pyproject.toml
+|   |-- .env.template
+|   `-- .env.postgres.template
+|-- frontend/
+|   |-- src/
+|   |-- public/
+|   |-- smoke/
+|   |-- docs/
+|   |-- Dockerfile
+|   |-- nginx.conf
+|   |-- .env.example
+|   `-- .env.production.example
+|-- docker-compose.yaml
+|-- nginx.conf
+`-- README.md
+```
 
 ## Архитектура запуска
 
-Во внешний мир опубликован только `nginx` на порту `80`.
+Во внешний мир публикуется только корневой `nginx`.
 
-Внутри сети Docker работают:
+Внутри Docker-сети работают:
 
-- `postgres` — `5432`
-- `backend` — `8000`
-- `frontend` — `5173`
+- `postgres` на `5432`
+- `backend` на `8000`
+- `frontend`, который отдаёт статическую production-сборку на `80`
+- корневой `nginx` на `80` и `443`
 
-Следствия:
+Схема трафика:
 
-- PostgreSQL не доступен с хоста напрямую
-- backend не доступен с хоста напрямую
-- frontend не доступен с хоста напрямую как отдельный сервис
-- весь внешний HTTP-трафик идёт только через `nginx`
+- `https://your-domain/` -> корневой `nginx` -> контейнер frontend
+- `https://your-domain/api/...` -> корневой `nginx` -> контейнер backend
+- `https://your-domain/health` -> корневой `nginx` -> backend `/health`
 
-Основные маршруты:
+Это означает:
 
-- `http://localhost/` → frontend
-- `http://localhost/api/...` → backend
-- `http://localhost/health` → healthcheck backend
-- `http://localhost/docs` → Swagger в режиме `DEV`
+- PostgreSQL не опубликован наружу на хост
+- backend не опубликован напрямую на хост
+- frontend не опубликован напрямую на хост
+- frontend внутри Docker работает как production static build, а не как `vite dev`
 
-## Текущее состояние и найденные проблемы
+## Env-файлы
 
-### Миграции
+Проект использует разные env-файлы для backend, PostgreSQL и локальной разработки frontend.
 
-Подозрение про отсутствие миграций для текущих таблиц не подтвердилось.
+Реальные env-файлы нельзя коммитить в git. В репозитории хранятся только шаблоны и примеры.
 
-Текущие таблицы backend:
+### 1. `backend/.env`
 
-- `users`
-- `refresh_sessions`
-- `specializations`
-- `doctor_specializations`
-- `doctor_qualification_documents`
-- `questions`
-- `question_comments`
+Шаблон: `backend/.env.template`
 
-Они уже создаются миграцией `backend/src/migrations/versions/2025_12_29_1832-8093419d4e91_removed_unused_fields.py`.
-
-При этом есть две реальные проблемы в миграционном слое:
-
-1. Ревизия `backend/src/migrations/versions/2026_02_15_2152-2094603e316e_added_basic_role_model.py` пустая. Это не ломает запуск, но это плохой сигнал по дисциплине миграций.
-2. Первая миграция была неустойчива к уже существующему enum `user_role` в PostgreSQL. Это исправлено через `checkfirst=True`.
-
-### Конфигурация
-
-Исправленные проблемы:
-
-1. Локальные `.env` файлы могли попадать внутрь Docker image. Это небезопасно и даёт расхождение между ожидаемым runtime и тем, что реально собрано. Исправлено через `backend/.dockerignore` и `frontend/.dockerignore`.
-2. `CFG_CORS__ALLOWED_ORIGINS` в текущей модели настроек должен задаваться как JSON-массив. Формат строки через запятую здесь не работает стабильно из-за поведения `pydantic-settings` на вложенных полях.
-3. Загрузки должны храниться на хосте, а не внутри эфемерной файловой системы контейнера. Сейчас они сохраняются в `backend/uploads`.
-4. Frontend внутри Docker всё ещё запускается через `vite dev`. Для локальной разработки это нормально, для production — нет.
-
-### Тестовый контур
-
-Есть один важный архитектурный нюанс:
-
-- backend-тесты создают схему напрямую через ORM (`Base.metadata.create_all()`), а не через Alembic
-- поэтому будущий разрыв между моделями и миграциями может не быть замечен тестами автоматически
-
-Это не блокирует текущую работу, но это реальный технический долг.
-
-## Подготовка окружения
-
-### 1. Backend env
-
-Создай локальный файл `backend/.env` на основе шаблона:
+Создание:
 
 ```bash
 cp backend/.env.template backend/.env
@@ -103,17 +80,29 @@ PowerShell:
 Copy-Item backend/.env.template backend/.env
 ```
 
-Обязательные поля:
+Этот файл настраивает само FastAPI-приложение.
+
+Обязательные значения для замены:
 
 - `CFG_DB__USER`
 - `CFG_DB__PASSWORD`
 - `CFG_AUTH__SECRET_KEY`
 
-Для Docker-режима backend должен ходить в PostgreSQL по адресу `postgres:5432`.
+Важные поля:
 
-### 2. PostgreSQL env
+- `CFG_DB__HOST=postgres` для Docker runtime
+- `CFG_APP__MODE=DEV` для локальной разработки
+- `CFG_APP__MODE=PROD` для production
+- `CFG_CORS__ALLOWED_ORIGINS` в production должен содержать реальный домен frontend
+- `CFG_AUTH__COOKIE_SECURE=true` обязателен в production
 
-Создай локальный файл `backend/.env.postgres`:
+Для production нужно взять тот же шаблон, заменить небезопасные значения и затем сохранить полное содержимое файла в GitHub Secret `BACKEND_ENV`.
+
+### 2. `backend/.env.postgres`
+
+Шаблон: `backend/.env.postgres.template`
+
+Создание:
 
 ```bash
 cp backend/.env.postgres.template backend/.env.postgres
@@ -125,11 +114,23 @@ PowerShell:
 Copy-Item backend/.env.postgres.template backend/.env.postgres
 ```
 
-Значения `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` должны совпадать с backend-настройками подключения к базе.
+Этот файл настраивает контейнер PostgreSQL.
 
-### 3. Frontend env
+Обязательные значения для замены:
 
-Создай локальный файл `frontend/.env`:
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_DB`
+
+Эти значения должны совпадать с DB-настройками из `backend/.env`.
+
+Для CI/CD содержимое этого файла нужно положить в GitHub Secret `POSTGRES_ENV`.
+
+### 3. `frontend/.env`
+
+Шаблон: `frontend/.env.example`
+
+Этот файл нужен только если frontend запускается локально через `npm run dev`:
 
 ```bash
 cp frontend/.env.example frontend/.env
@@ -141,24 +142,54 @@ PowerShell:
 Copy-Item frontend/.env.example frontend/.env
 ```
 
-## Локальный запуск приложения
+Назначение:
 
-Из корня проекта:
+- локальный Vite dev server
+- proxy `/api` запросов в локальный backend
+
+Значения в примере по умолчанию:
+
+- `VITE_BACKEND_PROXY_TARGET=http://localhost:8000`
+- `VITE_API_BASE_URL=/api/v1`
+
+### 4. `frontend/.env.production.example`
+
+Пример: `frontend/.env.production.example`
+
+Этот файл нужен как reference для локальных production-style сборок frontend вне Docker.
+
+Текущий production Docker image frontend не требует runtime env-файла, потому что собранный bundle по умолчанию использует `VITE_API_BASE_URL=/api/v1` и затем отдаётся как статические файлы через `nginx`.
+
+Именно поэтому текущий deploy в GitHub Actions использует только:
+
+- `BACKEND_ENV`
+- `POSTGRES_ENV`
+
+и не требует `FRONTEND_ENV`.
+
+## Локальный запуск через Docker
+
+Сначала подготовь env-файлы:
+
+- создай `backend/.env`
+- создай `backend/.env.postgres`
+
+После этого из корня репозитория:
 
 ```bash
 docker compose up --build
 ```
 
-Проверка после старта:
+Проверка сервисов:
 
 ```bash
 curl http://localhost/health
 ```
 
-В браузере:
+Открыть в браузере:
 
-- главная страница: `http://localhost/`
-- Swagger: `http://localhost/docs`
+- `http://localhost/` — frontend
+- `http://localhost/docs` — Swagger в режиме `DEV`
 
 Остановка:
 
@@ -166,66 +197,13 @@ curl http://localhost/health
 docker compose down
 ```
 
-Полная очистка с томами базы:
+Полный сброс с удалением volume базы:
 
 ```bash
 docker compose down -v
 ```
 
-## Работа с приложением
-
-### Основной пользовательский сценарий
-
-1. Открыть `http://localhost/`
-2. Зарегистрировать пациента или войти существующим пользователем
-3. После логина frontend хранит access token в памяти, а refresh token остаётся в cookie
-4. При перезагрузке страницы frontend восстанавливает сессию через `/api/v1/auth/refresh`
-5. Публичные страницы каталога врачей и вопросов доступны без логина
-6. Административные маршруты доступны только пользователям с ролью `admin` или `superuser`
-
-### Документы врачей
-
-Загрузки сохраняются в:
-
-- внутри контейнера: `/app/uploads/doctor_documents`
-- на хосте: `backend/uploads/doctor_documents`
-
-Это означает, что файлы не пропадут при пересоздании контейнера backend, пока не удалена папка `backend/uploads`.
-
-### Основные API-группы
-
-#### Auth
-
-- `POST /api/v1/auth/register/patient`
-- `POST /api/v1/auth/register/doctor`
-- `POST /api/v1/auth/login`
-- `POST /api/v1/auth/refresh`
-- `POST /api/v1/auth/logout`
-- `GET /api/v1/auth/me`
-- `PATCH /api/v1/auth/me`
-- `POST /api/v1/auth/change-password`
-
-#### Doctors
-
-- `GET /api/v1/doctors/`
-- `GET /api/v1/doctors/{doctor_id}`
-- `POST /api/v1/doctors/me/documents`
-
-#### Admin
-
-- `GET /api/v1/admin/doctors/pending`
-- `GET /api/v1/admin/doctors/{doctor_id}`
-- `PATCH /api/v1/admin/doctors/{doctor_id}/verify`
-- `GET /api/v1/admin/documents/{document_id}`
-
-#### Questions
-
-- `GET /api/v1/questions/`
-- `GET /api/v1/questions/{question_id}`
-- `POST /api/v1/questions/`
-- `POST /api/v1/questions/{question_id}/comments`
-
-## Запуск без Docker
+## Локальный запуск без Docker
 
 ### Backend
 
@@ -238,162 +216,155 @@ poetry run uvicorn src.main:app --reload
 
 ### Frontend
 
+Подготовь `frontend/.env`, затем:
+
 ```bash
 cd frontend
 npm ci
 npm run dev
 ```
 
-## Тесты и локальная валидация
+## Проверки и валидация
 
 ### Backend
 
 ```bash
 cd backend
-poetry run pytest -v
+poetry run python -m ruff check src tests
+poetry run python -m ruff format --check src tests
+poetry run python -m pyright
+poetry run python -m pytest -v
 ```
 
 ### Frontend
 
 ```bash
 cd frontend
+npm ci
 npm run lint
 npm run test:smoke
 npm run build
 ```
 
-Если нужно прогнать backend-тесты внутри контейнера, можно временно заменить команду сервиса `backend` на `poetry run pytest -v`.
-
-## Pre-commit и проверки перед push
-
-В проекте используется `.pre-commit-config.yaml`.
-
-### Что проверяется на commit
-
-На стадии `pre-commit` выполняются:
-
-- `trailing-whitespace`
-- `end-of-file-fixer`
-- `check-yaml`
-- `check-added-large-files`
-- `ruff check` для backend
-- `ruff format` для backend
-- `pyright` для backend
-
-### Что проверяется перед push
-
-На стадии `pre-push` выполняются:
-
-- `pytest -v` для backend
-- `npm run lint` для frontend
-- `npm run test:smoke` для frontend
-
-Это соответствует требованию проверять тесты перед отправкой в репозиторий.
-
-### Установка pre-commit
-
-Системный `pre-commit` не обязателен. В этой конфигурации удобнее использовать его из backend venv:
+### Docker
 
 ```bash
-cd backend
-poetry install
-poetry run python -m pre_commit install
-poetry run python -m pre_commit install --hook-type pre-push
+docker build -t telemedru-backend ./backend
+docker build -t telemedru-frontend ./frontend
 ```
 
-Из корня репозитория можно запускать так:
+## CI/CD в GitHub Actions
 
-```bash
-poetry -C backend run python -m pre_commit run --all-files
-poetry -C backend run python -m pre_commit run --all-files --hook-stage pre-push
-```
+Файл workflow: `.github/workflows/build.yaml`
 
-### Нужен ли глобальный eslint
+Триггеры:
 
-Нет, не нужен.
+- `pull_request` в `main`
+- `push` в `main`
 
-Причина:
+### Что запускается на Pull Request
 
-- hook запускает `npm --prefix frontend run lint`
-- `npm run` использует локальный `eslint` из `frontend/node_modules`
-- достаточно, чтобы в `frontend` были установлены зависимости через `npm ci`
+- backend-проверки: `ruff`, `ruff format --check`, `pyright`, `pytest`
+- frontend-проверки: `lint`, `test:smoke`, `build`
+- проверка Docker build backend image
+- проверка Docker build frontend image
 
-### Есть ли смысл держать JS в pre-commit
+### Что запускается на Push в `main`
 
-Да, смысл есть, но не на стадии `pre-commit`, а на стадии `pre-push`.
+Сначала проходят те же CI-проверки. Если они успешны, GitHub Actions делает deploy на Ubuntu-сервер:
 
-Причина:
+1. подключается по SSH
+2. создаёт deploy-директорию, если её ещё нет
+3. синхронизирует файлы репозитория через `rsync`
+4. загружает `backend/.env` и `backend/.env.postgres` из GitHub Secrets
+5. запускает `docker compose up -d --build --remove-orphans`
+6. проверяет backend health и ответ frontend внутри контейнеров
 
-- frontend в этом репозитории — полноценная часть продукта
-- lint и smoke-тесты frontend важны не меньше backend-проверок
-- но запускать их на каждый commit неудобно и медленно
+### Какие GitHub Secrets нужны
 
-Поэтому выбран практичный баланс:
+- `SSH_PRIVATE_KEY`
+- `SSH_KNOWN_HOSTS`
+- `SERVER_HOST`
+- `SERVER_PORT`
+- `SERVER_USER`
+- `DEPLOY_PATH`
+- `BACKEND_ENV`
+- `POSTGRES_ENV`
 
-- Python-проверки — на `pre-commit`
-- frontend lint и smoke — на `pre-push`
+### Требования к серверу
 
-Если команда маленькая и frontend меняется редко, можно оставить только Python hooks локально, а JS полностью доверить CI. Но для этого проекта текущая схема выглядит разумнее.
-
-## CI/CD: что делать дальше
-
-В корне проекта есть `.gitlab-ci.yml` для GitLab CI/CD.
-
-Runner должен иметь доступ к:
+На Ubuntu-сервере уже должны быть:
 
 - `docker`
 - `docker compose`
-- рабочей директории проекта на сервере, если runner используется для деплоя
+- SSH-доступ по ключу для deploy-пользователя
+- директория проекта, совпадающая с `DEPLOY_PATH`
+- валидные Let's Encrypt файлы, если сохраняется текущая схема с mount в корневом `nginx.conf`:
+  - `/etc/letsencrypt`
+  - `/var/lib/letsencrypt`
 
-В GitLab CI/CD variables должны быть заданы:
+У deploy-пользователя должны быть права на выполнение Docker-команд.
 
-- `MAIN_ENV` — содержимое backend env для `backend/.env`
-- `POSTGRES_ENV` — содержимое postgres env для `backend/.env.postgres`
-- `FRONTEND_ENV` — содержимое frontend env для `frontend/.env`
+## Как правильно заполнять GitHub Secrets
 
-Переменные могут быть как обычными переменными со значением, так и GitLab File variables. Pipeline поддерживает оба варианта.
+### `BACKEND_ENV`
 
-Порядок pipeline:
+Возьми `backend/.env.template`, замени placeholder-значения на production-значения, затем скопируй полное содержимое файла в GitHub Secret `BACKEND_ENV`.
 
-1. `build` — сборка backend и frontend Docker images
-2. `lint_format_typing_check` — `ruff`, `ruff format --check`, `pyright`, frontend lint
-3. `migrations` — применение Alembic migrations
-4. `tests` — backend tests, frontend smoke tests, frontend build
-5. `deploy` — `docker compose up -d --build`
-6. `cleanup` — очистка dangling images и старого build cache
+Минимальные production-настройки:
 
-Deploy job выполняется только для ветки `main`.
+- `CFG_APP__MODE=PROD`
+- сильный `CFG_AUTH__SECRET_KEY`
+- `CFG_AUTH__COOKIE_SECURE=true`
+- production-домен в `CFG_CORS__ALLOWED_ORIGINS`
+- отключённые docs в production:
+  - `CFG_APP__DOCS_URL=`
+  - `CFG_APP__REDOC_URL=`
+  - `CFG_APP__OPENAPI_URL=`
 
-Текущая docker-схема подходит для локального запуска и staging-подготовки.
+### `POSTGRES_ENV`
 
-Для production нужно сделать ещё два шага:
+Возьми `backend/.env.postgres.template`, замени placeholder-значения и затем скопируй полное содержимое файла в GitHub Secret `POSTGRES_ENV`.
 
-1. собирать frontend как статический bundle
-2. отдавать frontend из `nginx`, а не через `vite dev`
+### `SSH_KNOWN_HOSTS`
 
-Минимальный pipeline CI/CD должен выполнять:
+Сгенерируй значение со своей рабочей машины:
 
-1. `pre-commit run --all-files`
-2. backend tests
-3. frontend lint
-4. frontend smoke tests
-5. frontend build
-6. docker build
-7. deploy
+```bash
+ssh-keyscan -p <server_port> <server_host>
+```
 
-## Рудиментарные файлы
+Результат нужно сохранить в GitHub Secret `SSH_KNOWN_HOSTS`.
 
-Файл `INTEGRATION_TODO.md` не используется в рабочем контуре и не нужен для итоговой сборки. В текущем состоянии репозитория его нет, и дальше использовать такие файлы не нужно.
+## Примечания по Production
 
-## Полезные файлы
+Текущая схема деплоя корректна для этого репозитория в его текущем состоянии, потому что:
 
-- `README.md`
-- `docker-compose.yaml`
-- `nginx.conf`
-- `backend/Dockerfile`
-- `frontend/Dockerfile`
-- `backend/.env.template`
-- `backend/.env.postgres.template`
-- `frontend/.env.example`
-- `docs/ARCHITECTURE.md`
-- `docs/PRODUCTION_RUNBOOK.md`
+- backend и frontend собираются как отдельные Docker images
+- frontend теперь работает как статический production bundle через `nginx`
+- корневой `nginx` проксирует `/` во frontend, а `/api` в backend
+- deploy в GitHub Actions согласован с `docker-compose.yaml`
+- health-check после deploy проверяет и backend, и frontend контейнеры
+
+Текущие ограничения:
+
+- deploy выполняется in-place, без blue-green схемы
+- нет автоматического rollback
+- образы собираются на сервере во время deploy, а не публикуются в registry
+- предполагается, что SSL-сертификаты уже существуют на сервере
+
+## Итог по структуре проекта
+
+Структура репозитория в целом логична для небольшого монорепозитория:
+
+- `backend/` содержит код приложения, миграции и тесты
+- `frontend/` содержит код приложения, smoke-тесты и документацию по UI
+- инфраструктурные файлы вынесены в корень репозитория
+- CI/CD теперь соответствует реальной production-схеме запуска
+
+Основное структурное расхождение, которое было раньше, касалось frontend runtime в Docker:
+
+- раньше: `vite dev` внутри Docker
+- сейчас: production static build через `nginx`
+
+Это расхождение устранено.

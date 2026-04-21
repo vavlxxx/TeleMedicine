@@ -1,13 +1,11 @@
 import { AppLink } from './router'
 import { routes } from './routes'
+import telemedIcon from './assets/telemed-icon.png'
 
 function TelemedLogo() {
   return (
     <span className="tm-logo">
-      <span className="tm-logo__mark" aria-hidden="true">
-        <span className="tm-logo__cross tm-logo__cross--horizontal" />
-        <span className="tm-logo__cross tm-logo__cross--vertical" />
-      </span>
+      <img alt="TelemedRU" className="tm-logo__icon" src={telemedIcon} />
       <span className="tm-logo__text">TelemedRU</span>
     </span>
   )

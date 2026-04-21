@@ -40,15 +40,13 @@ services:
   frontend:
     build:
       context: ./frontend
-    env_file:
-      - ./frontend/.env
     depends_on:
       - backend
     expose:
-      - "5173"
+      - "80"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:5173').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -67,8 +65,8 @@ services:
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - /etc/letsencrypt:/etc/letsencrypt
-      - /var/lib/letsencrypt:/var/lib/letsencrypt
+      # - /etc/letsencrypt:/etc/letsencrypt
+      # - /var/lib/letsencrypt:/var/lib/letsencrypt
     restart: unless-stopped
     networks:
       - telemed_network

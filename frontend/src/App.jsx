@@ -5,6 +5,7 @@ import { useAuth } from './auth/AuthContext'
 import { fetchMockTestimonials } from './mocks/testimonials'
 import { AppLink } from './router'
 import { getDefaultAuthenticatedPath, routes } from './routes'
+import telemedIcon from './assets/telemed-icon.png'
 import './App.css'
 
 const navItems = [
@@ -381,11 +382,11 @@ function App() {
             href="#hero"
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            <div className="rounded-lg bg-primary p-1 text-white md:rounded-xl md:p-2">
-              <span className="material-symbols-outlined block text-lg md:text-2xl">
-                medical_services
-              </span>
-            </div>
+            <img
+              alt="TelemedRU"
+              className="h-9 w-9 rounded-lg object-cover md:h-11 md:w-11 md:rounded-xl"
+              src={telemedIcon}
+            />
             <h1 className="text-lg font-bold tracking-tight text-primary sm:text-xl md:text-2xl">
               Telemed<span className="text-slate-900">RU</span>
             </h1>
@@ -934,11 +935,7 @@ function App() {
           <div className="flex flex-col gap-6">
             <div>
               <div className="mb-3 flex items-center gap-2">
-                <div className="rounded-lg bg-primary p-1 text-white">
-                  <span className="material-symbols-outlined block text-lg">
-                    medical_services
-                  </span>
-                </div>
+                <img alt="TelemedRU" className="h-8 w-8 rounded-lg object-cover" src={telemedIcon} />
                 <h2 className="text-lg font-bold tracking-tight text-primary">
                   TelemedRU
                 </h2>
@@ -1010,11 +1007,7 @@ function App() {
         <div className="js-footer-grid mx-auto mb-14 hidden w-full max-w-7xl grid-cols-1 gap-10 sm:mb-16 md:grid md:grid-cols-2 lg:mb-20 lg:grid-cols-4 lg:gap-12">
           <div className="js-footer-col">
             <div className="mb-8 flex items-center gap-3">
-              <div className="rounded-xl bg-primary p-2 text-white">
-                <span className="material-symbols-outlined block">
-                  medical_services
-                </span>
-              </div>
+              <img alt="TelemedRU" className="h-10 w-10 rounded-xl object-cover" src={telemedIcon} />
               <h2 className="text-2xl font-bold tracking-tight text-primary">
                 TelemedRU
               </h2>

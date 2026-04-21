@@ -1,0 +1,198 @@
+name: TeleMedicine CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: telemedicine-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "22"
+  POETRY_VERSION: "2.1.4"
+
+jobs:
+  backend:
+    name: Backend checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Poetry
+        run: python -m pip install --upgrade pip "poetry==${POETRY_VERSION}"
+
+      - name: Install backend dependencies
+        run: poetry install --with dev --no-interaction --no-root
+
+      - name: Ruff check
+        run: poetry run python -m ruff check src tests
+
+      - name: Ruff format check
+        run: poetry run python -m ruff format --check src tests
+
+      - name: Pyright
+        run: poetry run python -m pyright
+
+      - name: Pytest
+        run: poetry run python -m pytest -v
+
+  frontend:
+    name: Frontend checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Smoke tests
+        run: npm run test:smoke
+
+      - name: Production build
+        run: npm run build
+
+  docker-build:
+    name: Docker build checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        run: docker build --tag telemedicine-backend:ci ./backend
+
+      - name: Build frontend image
+        run: docker build --tag telemedicine-frontend:ci ./frontend
+
+  deploy:
+    name: Deploy to Ubuntu server
+    runs-on: ubuntu-latest
+    needs:
+      - backend
+      - frontend
+      - docker-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Start SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Configure known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${SSH_KNOWN_HOSTS}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+        env:
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+
+      - name: Ensure deploy directory exists
+        run: |
+          ssh -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" "mkdir -p '$DEPLOY_PATH'"
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+
+      - name: Sync project files to server
+        run: |
+          rsync -az --delete \
+            --exclude ".git/" \
+            --exclude ".github/" \
+            --exclude "backend/.venv/" \
+            --exclude "backend/.pytest_cache/" \
+            --exclude "backend/__pycache__/" \
+            --exclude "frontend/node_modules/" \
+            --exclude "backend/uploads/" \
+            ./ "$SERVER_USER@$SERVER_HOST:$DEPLOY_PATH/"
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          RSYNC_RSH: ssh -p ${{ secrets.SERVER_PORT }}
+
+      - name: Create runtime env files
+        run: |
+          mkdir -p .deploy-env
+          printf '%s' "$BACKEND_ENV" > .deploy-env/backend.env
+          printf '%s' "$POSTGRES_ENV" > .deploy-env/postgres.env
+        env:
+          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
+          POSTGRES_ENV: ${{ secrets.POSTGRES_ENV }}
+
+      - name: Upload runtime env files
+        run: |
+          scp -P "$SERVER_PORT" .deploy-env/backend.env "$SERVER_USER@$SERVER_HOST:$DEPLOY_PATH/backend/.env"
+          scp -P "$SERVER_PORT" .deploy-env/postgres.env "$SERVER_USER@$SERVER_HOST:$DEPLOY_PATH/backend/.env.postgres"
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+
+      - name: Deploy containers
+        run: |
+          ssh -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" <<EOF
+          set -euo pipefail
+          cd "$DEPLOY_PATH"
+          mkdir -p backend/uploads/doctor_documents
+          docker compose up -d --build --remove-orphans
+
+          for attempt in \$(seq 1 20); do
+            if docker compose exec -T backend python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')" >/dev/null 2>&1 \
+              && docker compose exec -T frontend wget -q --spider http://127.0.0.1/; then
+              docker compose ps
+              exit 0
+            fi
+            sleep 5
+          done
+
+          docker compose ps
+          docker compose logs --no-color backend nginx
+          exit 1
+          EOF
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
