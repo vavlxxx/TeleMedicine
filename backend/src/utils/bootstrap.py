@@ -16,7 +16,7 @@ async def ensure_superuser() -> None:
     password_secret = settings.bootstrap.superuser_password
 
     if not username_raw or password_secret is None:
-        return
+        raise Exception("Bootstrap superuser is not configured")
 
     username = normalize_username(username_raw)
     password = validate_password(password_secret.get_secret_value())

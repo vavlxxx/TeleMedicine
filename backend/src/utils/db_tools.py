@@ -4,6 +4,7 @@ from sqlalchemy import Connection, inspect, text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from src.repos import (
+    AppOptionRepo,
     DoctorDocumentRepo,
     QuestionCommentRepo,
     QuestionRepo,
@@ -27,6 +28,7 @@ class DBManager:
         self.documents = DoctorDocumentRepo(session)
         self.questions = QuestionRepo(session)
         self.question_comments = QuestionCommentRepo(session)
+        self.app_options = AppOptionRepo(session)
 
     def add(self, instance) -> None:
         self.session.add(instance)

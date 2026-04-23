@@ -15,6 +15,7 @@ import QuestionPublicDetailPage from './QuestionPublicDetailPage.jsx'
 import LoginDesktopPage from './LoginDesktopPage.jsx'
 import RegistrationDesktopPage from './RegistrationDesktopPage.jsx'
 import NotFoundPage from './NotFoundPage.jsx'
+import { MaintenanceGate, MaintenanceProvider } from './maintenance/MaintenanceContext.jsx'
 import { AuthProvider } from './auth/AuthContext.jsx'
 import { GuestOnlyRoute, ProtectedRoute } from './RouteGuards.jsx'
 import { RouterProvider, useRouter } from './router.jsx'
@@ -132,7 +133,11 @@ function RootApp() {
   return (
     <RouterProvider>
       <AuthProvider>
-        <RouteRenderer />
+        <MaintenanceProvider>
+          <MaintenanceGate>
+            <RouteRenderer />
+          </MaintenanceGate>
+        </MaintenanceProvider>
       </AuthProvider>
     </RouterProvider>
   )

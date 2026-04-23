@@ -103,6 +103,9 @@ function EmptyState({ title, description }) {
 function AdminDoctorModerationPage() {
   const [activeTab, setActiveTab] = useState('overview')
   const [feedback, setFeedback] = useState({ type: '', text: '' })
+  const [maintenanceState, setMaintenanceState] = useState(null)
+  const [maintenanceError, setMaintenanceError] = useState('')
+  const [isMaintenanceSubmitting, setIsMaintenanceSubmitting] = useState(false)
 
   const [dashboard, setDashboard] = useState(null)
   const [isDashboardLoading, setIsDashboardLoading] = useState(true)
@@ -149,6 +152,19 @@ function AdminDoctorModerationPage() {
 
   const setCollectionLoading = (setter) => setter((current) => ({ ...current, isLoading: true, error: '' }))
   const setCollectionError = (setter, message) => setter((current) => ({ ...current, isLoading: false, error: message }))
+
+  const loadMaintenanceState = useCallback(async () => {
+    setMaintenanceError('')
+
+    try {
+      const response = await apiClient.getMaintenanceState()
+      setMaintenanceState(response)
+    } catch (error) {
+      setMaintenanceError(
+        error instanceof ApiError ? error.message : 'Не удалось загрузить состояние заглушки',
+      )
+    }
+  }, [])
 
   const loadDashboard = useCallback(async () => {
     setIsDashboardLoading(true)
@@ -236,6 +252,10 @@ function AdminDoctorModerationPage() {
   }, [pendingQuery])
 
   useEffect(() => {
+    loadMaintenanceState()
+  }, [loadMaintenanceState])
+
+  useEffect(() => {
     loadDashboard()
   }, [loadDashboard])
 
@@ -306,7 +326,7 @@ function AdminDoctorModerationPage() {
   }
 
   const refreshVisibleData = async () => {
-    await loadDashboard()
+    await Promise.all([loadDashboard(), loadMaintenanceState()])
 
     if (activeTab === 'users') {
       await loadUsers()
@@ -319,6 +339,34 @@ function AdminDoctorModerationPage() {
     }
     if (activeTab === 'doctors') {
       await loadPendingDoctors()
+    }
+  }
+
+  const handleMaintenanceToggle = async () => {
+    if (!maintenanceState) {
+      return
+    }
+
+    setIsMaintenanceSubmitting(true)
+    setMaintenanceError('')
+
+    try {
+      const nextState = await apiClient.updateMaintenanceState({
+        enabled: !maintenanceState.enabled,
+      })
+      setMaintenanceState(nextState)
+      setFeedback({
+        type: 'success',
+        text: nextState.enabled
+          ? 'Заглушка включена. Для обычных пользователей сайт заблокирован.'
+          : 'Заглушка отключена. Сайт снова доступен пользователям.',
+      })
+    } catch (error) {
+      setMaintenanceError(
+        error instanceof ApiError ? error.message : 'Не удалось изменить состояние заглушки',
+      )
+    } finally {
+      setIsMaintenanceSubmitting(false)
     }
   }
 
@@ -521,6 +569,41 @@ function AdminDoctorModerationPage() {
               {feedback.text}
             </section>
           ) : null}
+
+          <section className="tm-card tm-detail-card">
+            <div className="tm-admin-section-head">
+              <div>
+                <h2>Заглушка сайта</h2>
+                <p>
+                  При включении пользователи и врачи видят maintenance-экран, а API блокирует любые
+                  действия и публичные разделы. Администратор продолжает работать с системой.
+                </p>
+              </div>
+              <button
+                className={`tm-button ${maintenanceState?.enabled ? 'tm-button--danger' : ''}`}
+                type="button"
+                onClick={handleMaintenanceToggle}
+                disabled={!maintenanceState || isMaintenanceSubmitting}
+              >
+                {isMaintenanceSubmitting
+                  ? 'Сохраняем...'
+                  : maintenanceState?.enabled
+                    ? 'Выключить заглушку'
+                    : 'Включить заглушку'}
+              </button>
+            </div>
+
+            <div className="tm-inline-meta">
+              <span className="tm-file-chip">
+                Статус: {maintenanceState?.enabled ? 'включена' : 'выключена'}
+              </span>
+              <span className="tm-muted">
+                Админ и superuser обходят ограничение автоматически после входа.
+              </span>
+            </div>
+
+            {maintenanceError ? <p className="tm-form-error">{maintenanceError}</p> : null}
+          </section>
 
           <div className="tm-admin-tabs">
             {ADMIN_TABS.map((item) => (

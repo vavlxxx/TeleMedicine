@@ -150,3 +150,29 @@ test('route helpers keep redirects inside the app and select correct dashboards'
   assert.equal(resolveSafeAppPath('/api/v1/auth/me'), routes.landing)
   assert.equal(withReturnTo(routes.login, '/account?tab=security'), '/login-desktop-ru?returnTo=%2Faccount%3Ftab%3Dsecurity')
 })
+
+test('maintenance state uses dedicated endpoints', async () => {
+  const requests = []
+
+  globalThis.fetch = async (url, options) => {
+    requests.push({ url, options })
+
+    if (options.method === 'PATCH') {
+      return jsonResponse({ enabled: true, updated_at: '2026-04-23T22:45:00Z' })
+    }
+
+    return jsonResponse({ enabled: false, updated_at: null })
+  }
+
+  const state = await apiClient.getMaintenanceState()
+  const updatedState = await apiClient.updateMaintenanceState({ enabled: true })
+
+  assert.equal(state.enabled, false)
+  assert.equal(updatedState.enabled, true)
+  assert.equal(requests[0].url, '/api/v1/maintenance/')
+  assert.equal(requests[0].options.method, 'GET')
+  assert.equal(requests[1].url, '/api/v1/maintenance/')
+  assert.equal(requests[1].options.method, 'PATCH')
+  assert.equal(requests[1].options.headers.get('Content-Type'), 'application/json')
+  assert.deepEqual(JSON.parse(requests[1].options.body), { enabled: true })
+})
