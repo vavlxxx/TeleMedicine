@@ -26,6 +26,8 @@ async def override_get_db() -> AsyncGenerator[AsyncSession, None]:
 @pytest.fixture(scope="session", autouse=True)
 async def setup_test_database() -> AsyncGenerator[None, None]:
     app.dependency_overrides[get_db] = override_get_db
+    original_sessionmaker = app.state.db_sessionmaker
+    app.state.db_sessionmaker = TestingSessionLocal
     original_lifespan = app.router.lifespan_context
 
     @asynccontextmanager
@@ -41,6 +43,7 @@ async def setup_test_database() -> AsyncGenerator[None, None]:
     yield
 
     app.dependency_overrides.clear()
+    app.state.db_sessionmaker = original_sessionmaker
     app.router.lifespan_context = original_lifespan
 
     async with engine.begin() as conn:

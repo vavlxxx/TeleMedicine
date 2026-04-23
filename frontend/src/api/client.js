@@ -245,6 +245,18 @@ export const apiClient = {
     return request('/auth/me/documents', { auth: true })
   },
 
+  getMaintenanceState() {
+    return request('/maintenance/')
+  },
+
+  updateMaintenanceState(payload) {
+    return request('/maintenance/', {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+      auth: true,
+    })
+  },
+
   updateMe(payload) {
     return request('/auth/me', {
       method: 'PATCH',
