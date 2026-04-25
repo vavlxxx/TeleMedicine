@@ -6,7 +6,14 @@ import { formatDateTime, getDisplayName, getInitials, parsePositiveInteger } fro
 import { TelemedPage } from './TelemedLayout'
 import { getDoctorVisualProfile } from './telemedReference'
 
-const profileTabs = ['О враче', 'Образование и опыт', 'Отзывы', 'Публикации']
+const profileTabs = [
+  { key: 'about', label: 'О враче' },
+  { key: 'reviews', label: 'Отзывы' },
+  { key: 'consultations', label: 'Консультации' },
+  { key: 'certificates', label: 'Сертификаты' },
+]
+
+const numberFormatter = new Intl.NumberFormat('ru-RU')
 
 function DoctorPublicProfilePage() {
   const { location } = useRouter()
@@ -17,6 +24,7 @@ function DoctorPublicProfilePage() {
   const [doctor, setDoctor] = useState(null)
   const [isLoading, setIsLoading] = useState(Boolean(doctorId))
   const [errorMessage, setErrorMessage] = useState('')
+  const [activeTab, setActiveTab] = useState(profileTabs[0].key)
 
   useEffect(() => {
     let isCancelled = false
@@ -57,6 +65,7 @@ function DoctorPublicProfilePage() {
   }, [doctorId])
 
   const visualProfile = doctor ? getDoctorVisualProfile(doctor) : null
+  const mainSpecialization = doctor?.specializations[0]?.name || 'Врач'
   const reviewCards = doctor
     ? [
         {
@@ -69,6 +78,121 @@ function DoctorPublicProfilePage() {
         },
       ]
     : []
+  const tabBadges = visualProfile
+    ? {
+        reviews: visualProfile.reviewsCount,
+        consultations: visualProfile.consultationsCount,
+        certificates: visualProfile.certificatesCount,
+      }
+    : {}
+
+  const renderTabContent = () => {
+    if (!doctor || !visualProfile) {
+      return null
+    }
+
+    if (activeTab === 'reviews') {
+      return (
+        <section className="tm-profile-tab-panel">
+          <div className="tm-question-card__row">
+            <h2>Отзывы пациентов</h2>
+            <span className="tm-link">{numberFormatter.format(visualProfile.reviewsCount)} отзывов</span>
+          </div>
+
+          <div className="tm-review-grid">
+            {reviewCards.map((review) => (
+              <article className="tm-card tm-review-card" key={review.author}>
+                <div className="tm-inline-meta">
+                  <div className="tm-doctor-portrait tm-review-card__avatar">
+                    {review.author.split(' ').map((part) => part[0]).join('')}
+                  </div>
+                  <div>
+                    <strong>{review.author}</strong>
+                    <div className="tm-muted">{formatDateTime(new Date().toISOString())}</div>
+                  </div>
+                </div>
+                <p>{review.text}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )
+    }
+
+    if (activeTab === 'consultations') {
+      return (
+        <section className="tm-profile-tab-panel">
+          <h2>Консультации</h2>
+          <div className="tm-profile-info-grid">
+            <div>
+              <span className="tm-overline">Формат</span>
+              <strong>Видео, аудио или чат</strong>
+              <p className="tm-muted">Подходит для первичной консультации, разбора анализов и уточнения тактики лечения.</p>
+            </div>
+            <div>
+              <span className="tm-overline">Ближайший слот</span>
+              <strong>{visualProfile.eta}, 14:30 (мск)</strong>
+              <p className="tm-muted">После записи пациент получает подтверждение и ссылку на онлайн-прием.</p>
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    if (activeTab === 'certificates') {
+      return (
+        <section className="tm-profile-tab-panel">
+          <h2>Сертификаты</h2>
+          <div className="tm-profile-certificate-list">
+            <div>
+              <span className="material-symbols-outlined">workspace_premium</span>
+              <div>
+                <strong>Действующий сертификат специалиста</strong>
+                <p className="tm-muted">Подтвержден платформой при модерации профиля врача.</p>
+              </div>
+            </div>
+            <div>
+              <span className="material-symbols-outlined">verified_user</span>
+              <div>
+                <strong>Документы об образовании</strong>
+                <p className="tm-muted">Проверено документов: {visualProfile.certificatesCount}.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    return (
+      <section className="tm-profile-tab-panel">
+        <h2>О враче</h2>
+        <p>
+          {mainSpecialization} помогает пациентам дистанционно: оценивает симптомы, разбирает результаты
+          исследований, объясняет риски и формирует понятный план дальнейших действий.
+        </p>
+
+        <h2>Специализация в лечении пациентов</h2>
+        <p>
+          Консультации проходят по направлениям: {doctor.specializations.map((item) => item.name).join(', ') || 'общая медицина'}.
+          Врач работает с повторными обращениями, подготовкой к очному приему и сопровождением после назначений.
+        </p>
+
+        <h2>Опыт и образование</h2>
+        <div className="tm-timeline">
+          <div className="tm-timeline-item">
+            <span className="tm-overline">2018 — наст. время</span>
+            <h3>Ведущий специалист онлайн-консультаций</h3>
+            <p className="tm-muted">Практика по направлению {mainSpecialization.toLowerCase()}.</p>
+          </div>
+          <div className="tm-timeline-item">
+            <span className="tm-overline">2013 — 2018</span>
+            <h3>Врач амбулаторного приема</h3>
+            <p className="tm-muted">Работа с хроническими пациентами и сопровождением после лечения.</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <TelemedPage
@@ -113,151 +237,124 @@ function DoctorPublicProfilePage() {
 
           {doctor && visualProfile ? (
             <div className="tm-profile-layout">
-              <div className="tm-grid">
-                <article className="tm-card tm-profile-hero">
+              <aside className="tm-profile-sidebar">
+                <article className="tm-card tm-profile-identity-card">
                   <div
-                    className="tm-doctor-portrait tm-profile-hero__portrait"
+                    className="tm-doctor-portrait tm-profile-identity-card__portrait"
                     style={{ background: visualProfile.theme.background }}
                     aria-hidden="true"
                   >
                     {getInitials(doctor)}
                   </div>
 
-                  <div>
-                    <div className="tm-inline-meta">
-                      <span className="tm-verified-strip">Проверенный эксперт</span>
-                      <span className="tm-rating-badge">
-                        <span className="material-symbols-outlined">star</span>
-                        {visualProfile.rating}
-                      </span>
-                    </div>
-
-                    <h1 className="tm-profile-hero__title">{getDisplayName(doctor)}</h1>
-                    <p className="tm-muted">
-                      {doctor.specializations.map((item) => item.name).join(', ') || 'Врач'} ·{' '}
-                      {visualProfile.qualification}
-                    </p>
-
-                    <div className="tm-stat-grid">
-                      <div className="tm-stat">
-                        <label>Стаж работы</label>
-                        <strong>{visualProfile.experience.replace('Стаж: ', '')}</strong>
-                      </div>
-                      <div className="tm-stat">
-                        <label>Категория</label>
-                        <strong>Высшая</strong>
-                      </div>
-                      <div className="tm-stat">
-                        <label>Степень</label>
-                        <strong>{visualProfile.qualification}</strong>
-                      </div>
-                    </div>
+                  <div className={doctor.is_online ? 'tm-profile-presence is-online' : 'tm-profile-presence'}>
+                    <span className="tm-online-dot" aria-hidden="true" />
+                    {doctor.is_online ? 'Сейчас на сайте' : `Заходил(a): ${visualProfile.eta}`}
                   </div>
-                </article>
 
-                <article className="tm-card tm-detail-card">
-                  <div className="tm-tabbar">
-                    {profileTabs.map((item, index) => (
-                      <span className={index === 0 ? 'is-active' : ''} key={item}>
-                        {item}
-                      </span>
+                  <div className="tm-profile-rating-row" aria-label={`Рейтинг ${visualProfile.rating}`}>
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <span className="material-symbols-outlined" key={index}>star</span>
                     ))}
                   </div>
 
-                  <div style={{ paddingTop: '24px' }}>
-                    <h2>Специализация</h2>
-                    <p>
-                      {getDisplayName(doctor)} ведет дистанционные консультации, помогает с
-                      маршрутизацией пациента и формированием плана дальнейшего обследования.
-                      Публичный профиль рендерит только открытые поля из backend DTO.
-                    </p>
-
-                    <h2 style={{ marginTop: '28px' }}>Опыт и образование</h2>
-                    <div className="tm-timeline">
-                      <div className="tm-timeline-item">
-                        <span className="tm-overline">2018 — наст. время</span>
-                        <h3>Ведущий специалист онлайн-консультаций</h3>
-                        <p className="tm-muted">Практика по направлению {doctor.specializations[0]?.name || 'терапия'}.</p>
-                      </div>
-                      <div className="tm-timeline-item">
-                        <span className="tm-overline">2013 — 2018</span>
-                        <h3>Врач амбулаторного приема</h3>
-                        <p className="tm-muted">Работа с хроническими пациентами и сопровождением после лечения.</p>
-                      </div>
-                      <div className="tm-timeline-item">
-                        <span className="tm-overline">2010 — 2012</span>
-                        <h3>Ординатура и клиническая практика</h3>
-                        <p className="tm-muted">Медицинская база, на которой строится текущая специализация врача.</p>
-                      </div>
-                    </div>
-                  </div>
-                </article>
-
-                <section className="tm-grid">
-                  <div className="tm-question-card__row">
-                    <h2>Отзывы пациентов</h2>
-                    <span className="tm-link">Все отзывы</span>
-                  </div>
-
-                  <div className="tm-review-grid">
-                    {reviewCards.map((review) => (
-                      <article className="tm-card tm-review-card" key={review.author}>
-                        <div className="tm-inline-meta">
-                          <div className="tm-doctor-portrait" style={{ width: '44px', height: '44px', borderRadius: '16px', background: '#eff3fb', color: '#5d6a83', fontSize: '14px' }}>
-                            {review.author.split(' ').map((part) => part[0]).join('')}
-                          </div>
-                          <div>
-                            <strong>{review.author}</strong>
-                            <div className="tm-muted">{formatDateTime(new Date().toISOString())}</div>
-                          </div>
-                        </div>
-                        <p>{review.text}</p>
-                      </article>
-                    ))}
-                  </div>
-                </section>
-              </div>
-
-              <aside className="tm-grid">
-                <article className="tm-card tm-side-panel">
-                  <div className="tm-side-panel__header">
-                    <div>
-                      <span className="tm-overline">Стоимость консультации</span>
-                      <strong style={{ display: 'block', marginTop: '8px', fontSize: '42px', fontFamily: 'Manrope, sans-serif', letterSpacing: '-0.05em' }}>
-                        {visualProfile.price.toLocaleString('ru-RU')} ₽
-                      </strong>
-                    </div>
-                    <span className="material-symbols-outlined" style={{ color: '#2f6fe8' }}>credit_card</span>
-                  </div>
-
-                  <div className="tm-field-stack">
-                    <div className="tm-card" style={{ padding: '16px', borderRadius: '18px', background: '#f5f7ff' }}>
-                      <strong>Ближайший слот</strong>
-                      <p className="tm-muted" style={{ margin: '6px 0 0' }}>{visualProfile.eta}, 14:30 (мск)</p>
-                    </div>
-                    <div className="tm-card" style={{ padding: '16px', borderRadius: '18px', background: '#fafbfd' }}>
-                      <strong>Формат приема</strong>
-                      <p className="tm-muted" style={{ margin: '6px 0 0' }}>Видео, аудио или чат</p>
-                    </div>
-                    <AppLink className="tm-button" href={routes.questions}>
-                      Начать чат
-                    </AppLink>
-                    <AppLink className="tm-button tm-button--dark" href={withReturnTo(routes.login, currentPageHref)}>
-                      Записаться на прием
-                    </AppLink>
-                  </div>
-                </article>
-
-                <article className="tm-card tm-side-panel" style={{ background: 'linear-gradient(180deg, #132445 0%, #0b1630 100%)', color: '#ffffff' }}>
-                  <h2 style={{ color: '#ffffff' }}>Сложный случай?</h2>
-                  <p style={{ color: 'rgba(255,255,255,0.72)' }}>
-                    Мы поможем подобрать нужного специалиста и подготовить документы к онлайн-консультации.
-                  </p>
-                  <AppLink className="tm-button tm-button--soft" href={routes.questions}>
-                    Связаться с консъержем
+                  <AppLink className="tm-button" href={withReturnTo(routes.login, currentPageHref)}>
+                    Консультация {visualProfile.price.toLocaleString('ru-RU')} ₽
+                  </AppLink>
+                  <AppLink className="tm-button tm-button--success" href={routes.questions}>
+                    Благодарность врачу
                   </AppLink>
                 </article>
               </aside>
+
+              <div className="tm-grid">
+                <article className="tm-card tm-profile-summary-card">
+                  <div className="tm-profile-summary-card__header">
+                    <div>
+                      <div className="tm-inline-meta">
+                        <span className="tm-verified-strip">
+                          <span className="material-symbols-outlined">verified</span>
+                          Проверенный эксперт
+                        </span>
+                        {doctor.is_online ? (
+                          <span className="tm-online-chip">
+                            <span className="tm-online-dot" aria-hidden="true" />
+                            Онлайн
+                          </span>
+                        ) : null}
+                      </div>
+                      <h1 className="tm-profile-hero__title">{getDisplayName(doctor)}</h1>
+                      <p className="tm-muted">{doctor.specializations.map((item) => item.name).join(', ') || 'Врач'}</p>
+                    </div>
+                  </div>
+
+                  <dl className="tm-profile-info-list">
+                    <div>
+                      <dt>Место работы</dt>
+                      <dd>Онлайн-клиника TelemedRU</dd>
+                    </div>
+                    <div>
+                      <dt>Должность</dt>
+                      <dd>{mainSpecialization}</dd>
+                    </div>
+                    <div>
+                      <dt>Общий стаж</dt>
+                      <dd>{visualProfile.experience.replace('Стаж: ', '')}</dd>
+                    </div>
+                    <div>
+                      <dt>Специализация</dt>
+                      <dd>{doctor.specializations.map((item) => item.name).join(', ') || 'Не указана'}</dd>
+                    </div>
+                    <div>
+                      <dt>Научная степень</dt>
+                      <dd>{visualProfile.qualification}</dd>
+                    </div>
+                    <div>
+                      <dt>Образование</dt>
+                      <dd>Медицинский университет, лечебный факультет, врач</dd>
+                    </div>
+                  </dl>
+                </article>
+
+                <section className="tm-card tm-profile-stats-card">
+                  <div>
+                    <strong>{numberFormatter.format(visualProfile.reviewsCount)}</strong>
+                    <span>Отзывов</span>
+                  </div>
+                  <div>
+                    <strong>{numberFormatter.format(visualProfile.viewsCount)}</strong>
+                    <span>Просмотров</span>
+                  </div>
+                  <div>
+                    <strong>{numberFormatter.format(visualProfile.consultationsCount)}</strong>
+                    <span>Консультаций</span>
+                  </div>
+                  <div>
+                    <strong>{visualProfile.responseTimeHours} часа</strong>
+                    <span>Время отклика</span>
+                  </div>
+                </section>
+
+                <article className="tm-card tm-detail-card">
+                  <div className="tm-tabbar" role="tablist" aria-label="Разделы профиля врача">
+                    {profileTabs.map((item) => (
+                      <button
+                        className={activeTab === item.key ? 'is-active' : ''}
+                        type="button"
+                        role="tab"
+                        aria-selected={activeTab === item.key}
+                        key={item.key}
+                        onClick={() => setActiveTab(item.key)}
+                      >
+                        <span>{item.label}</span>
+                        {tabBadges[item.key] ? <strong>{numberFormatter.format(tabBadges[item.key])}</strong> : null}
+                      </button>
+                    ))}
+                  </div>
+
+                  {renderTabContent()}
+                </article>
+              </div>
             </div>
           ) : null}
         </div>

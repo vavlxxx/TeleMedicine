@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from src.models.auth import User
 from src.models.doctor import DoctorQualificationDocument, Specialization
 from src.models.qa import Question, QuestionComment
@@ -38,6 +40,16 @@ def to_document_dto(document: DoctorQualificationDocument) -> DoctorQualificatio
     )
 
 
+def _has_active_refresh_session(user: User) -> bool:
+    now = datetime.now(UTC)
+
+    return any(
+        session.revoked_at is None
+        and (session.expires_at.replace(tzinfo=UTC) if session.expires_at.tzinfo is None else session.expires_at) > now
+        for session in user.refresh_sessions
+    )
+
+
 def to_doctor_list_item(user: User) -> DoctorListItemDTO:
     return DoctorListItemDTO(
         id=user.id,
@@ -46,6 +58,7 @@ def to_doctor_list_item(user: User) -> DoctorListItemDTO:
         first_name=user.first_name,
         last_name=user.last_name,
         is_verified_doctor=user.is_verified_doctor,
+        is_online=_has_active_refresh_session(user),
         specializations=[
             to_specialization_dto(spec) for spec in sorted(user.specializations, key=lambda item: item.name.lower())
         ],
