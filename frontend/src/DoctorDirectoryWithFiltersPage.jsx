@@ -17,6 +17,7 @@ function DoctorDirectoryWithFiltersPage() {
   const [minimumRating, setMinimumRating] = useState(0)
   const [minimumPrice, setMinimumPrice] = useState('')
   const [maximumPrice, setMaximumPrice] = useState('')
+  const [onlineOnly, setOnlineOnly] = useState(false)
 
   const [specializations, setSpecializations] = useState([])
   const [doctors, setDoctors] = useState([])
@@ -86,8 +87,9 @@ function DoctorDirectoryWithFiltersPage() {
       const priceMatches =
         (!minimumPrice || doctor.visualProfile.price >= Number(minimumPrice)) &&
         (!maximumPrice || doctor.visualProfile.price <= Number(maximumPrice))
+      const onlineMatches = !onlineOnly || doctor.is_online
 
-      return specializationMatches && searchMatches && ratingMatches && experienceMatches && priceMatches
+      return specializationMatches && searchMatches && ratingMatches && experienceMatches && priceMatches && onlineMatches
     })
   }, [
     enrichedDoctors,
@@ -95,6 +97,7 @@ function DoctorDirectoryWithFiltersPage() {
     minimumExperience,
     minimumPrice,
     minimumRating,
+    onlineOnly,
     searchQuery,
     selectedSpecializationId,
   ])
@@ -155,6 +158,7 @@ function DoctorDirectoryWithFiltersPage() {
                   setMinimumRating(0)
                   setMinimumPrice('')
                   setMaximumPrice('')
+                  setOnlineOnly(false)
                   setSearchQuery('')
                 }}>
                   Сбросить
@@ -179,6 +183,21 @@ function DoctorDirectoryWithFiltersPage() {
                       </option>
                     ))}
                   </select>
+                </div>
+
+                <div className="tm-field-block">
+                  <label className="tm-field-label">
+                    <span className="material-symbols-outlined">radio_button_checked</span>
+                    Сейчас на сайте
+                  </label>
+                  <label className="tm-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={onlineOnly}
+                      onChange={(event) => setOnlineOnly(event.target.checked)}
+                    />
+                    Только врачи онлайн
+                  </label>
                 </div>
 
                 <div className="tm-field-block">
@@ -278,6 +297,12 @@ function DoctorDirectoryWithFiltersPage() {
                             <span className="material-symbols-outlined">star</span>
                             {doctor.visualProfile.rating}
                           </span>
+                          {doctor.is_online ? (
+                            <span className="tm-online-badge">
+                              <span className="tm-online-dot" aria-hidden="true" />
+                              Сейчас на сайте
+                            </span>
+                          ) : null}
                           <div className="tm-doctor-portrait" aria-hidden="true">
                             {getInitials(doctor)}
                           </div>

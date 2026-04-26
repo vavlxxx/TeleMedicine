@@ -43,6 +43,11 @@ export function getDoctorVisualProfile(doctor) {
   const experience = experienceLabels[seed % experienceLabels.length]
   const qualification = qualificationLabels[(seed + 2) % qualificationLabels.length]
   const eta = ['Сегодня', 'Завтра', 'Через 2 дня'][seed % 3]
+  const reviewsCount = 12 + (seed % 37)
+  const consultationsCount = 840 + (seed % 3600)
+  const viewsCount = 4200 + (seed % 18000)
+  const certificatesCount = 2 + (seed % 6)
+  const responseTimeHours = 1 + (seed % 4)
 
   return {
     theme,
@@ -51,6 +56,11 @@ export function getDoctorVisualProfile(doctor) {
     experience,
     qualification,
     eta,
+    reviewsCount,
+    consultationsCount,
+    viewsCount,
+    certificatesCount,
+    responseTimeHours,
   }
 }
 

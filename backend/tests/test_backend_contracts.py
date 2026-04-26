@@ -254,6 +254,7 @@ async def test_directory_profile_and_question_flow_contracts(ac: AsyncClient, db
         headers=admin_headers,
     )
     assert verify.status_code == 200
+    await _login(ac, "doctor_directory", "DoctorPass!123")
 
     patient_register = await ac.post(
         "/auth/register/patient",
@@ -269,10 +270,12 @@ async def test_directory_profile_and_question_flow_contracts(ac: AsyncClient, db
     assert directory.status_code == 200
     assert len(directory.json()) == 1
     assert directory.json()[0]["id"] == doctor_id
+    assert directory.json()[0]["is_online"] is True
 
     public_profile = await ac.get(f"/doctors/{doctor_id}")
     assert public_profile.status_code == 200
     assert public_profile.json()["username"] == "doctor_directory"
+    assert public_profile.json()["is_online"] is True
 
     create_question_unauthorized = await ac.post("/questions/", json={"text": "Can I post anonymously?"})
     assert create_question_unauthorized.status_code == 401

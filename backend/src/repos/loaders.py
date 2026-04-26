@@ -13,9 +13,12 @@ ADMIN_USER_OPTIONS = USER_PROFILE_OPTIONS + (
     selectinload(User.comments),
 )
 
-DOCTOR_DIRECTORY_OPTIONS = (selectinload(User.specializations),)
+DOCTOR_DIRECTORY_OPTIONS = (
+    selectinload(User.specializations),
+    selectinload(User.refresh_sessions),
+)
 
-DOCTOR_DETAIL_OPTIONS = USER_PROFILE_OPTIONS
+DOCTOR_DETAIL_OPTIONS = USER_PROFILE_OPTIONS + (selectinload(User.refresh_sessions),)
 
 QUESTION_OPTIONS = (
     selectinload(Question.author),
