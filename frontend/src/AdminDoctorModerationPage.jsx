@@ -9,14 +9,15 @@ import {
   formatFileSize,
   getDisplayName,
 } from './publicPageUtils'
-import { TelemedPage } from './TelemedLayout'
-import { summarizeQuestion } from './telemedReference'
+import { VirtualMedicPage } from './VirtualMedicLayout'
+import { summarizeQuestion } from './virtualmedicReference'
 
 const PAGE_LIMIT = 10
 
 const ADMIN_TABS = [
   { key: 'overview', label: 'Обзор' },
   { key: 'users', label: 'Пользователи' },
+  { key: 'specializations', label: 'Специализации' },
   { key: 'questions', label: 'Вопросы' },
   { key: 'answers', label: 'Ответы' },
   { key: 'doctors', label: 'Заявки врачей' },
@@ -73,13 +74,13 @@ function PaginationControls({ offset, limit, total, onPrev, onNext }) {
   const canGoNext = offset + limit < total
 
   return (
-    <div className="tm-admin-pagination">
-      <span className="tm-muted">{getPaginationLabel(offset, limit, total)}</span>
-      <div className="tm-admin-pagination__actions">
-        <button className="tm-button tm-button--soft" type="button" onClick={onPrev} disabled={!canGoPrev}>
+    <div className="vm-admin-pagination">
+      <span className="vm-muted">{getPaginationLabel(offset, limit, total)}</span>
+      <div className="vm-admin-pagination__actions">
+        <button className="vm-button vm-button--soft" type="button" onClick={onPrev} disabled={!canGoPrev}>
           Назад
         </button>
-        <button className="tm-button tm-button--soft" type="button" onClick={onNext} disabled={!canGoNext}>
+        <button className="vm-button vm-button--soft" type="button" onClick={onNext} disabled={!canGoNext}>
           Дальше
         </button>
       </div>
@@ -88,12 +89,12 @@ function PaginationControls({ offset, limit, total, onPrev, onNext }) {
 }
 
 function AdminToolbar({ children }) {
-  return <div className="tm-admin-toolbar">{children}</div>
+  return <div className="vm-admin-toolbar">{children}</div>
 }
 
 function EmptyState({ title, description }) {
   return (
-    <section className="tm-card tm-empty-state">
+    <section className="vm-card vm-empty-state">
       <h2>{title}</h2>
       <p>{description}</p>
     </section>
@@ -120,6 +121,18 @@ function AdminDoctorModerationPage() {
     limit: PAGE_LIMIT,
   })
   const [usersState, setUsersState] = useState(createCollectionState)
+
+  const [specializationsState, setSpecializationsState] = useState({
+    items: [],
+    isLoading: false,
+    error: '',
+  })
+  const [specializationDraft, setSpecializationDraft] = useState('')
+  const [specializationDraftError, setSpecializationDraftError] = useState('')
+  const [editingSpecializationId, setEditingSpecializationId] = useState(null)
+  const [editingSpecializationName, setEditingSpecializationName] = useState('')
+  const [specializationSubmittingId, setSpecializationSubmittingId] = useState(null)
+  const [isSpecializationCreating, setIsSpecializationCreating] = useState(false)
 
   const [questionsQuery, setQuestionsQuery] = useState({
     search: '',
@@ -200,6 +213,25 @@ function AdminDoctorModerationPage() {
     }
   }, [usersQuery])
 
+  const loadSpecializations = useCallback(async () => {
+    setSpecializationsState((current) => ({ ...current, isLoading: true, error: '' }))
+
+    try {
+      const response = await apiClient.listSpecializations()
+      setSpecializationsState({
+        items: response,
+        isLoading: false,
+        error: '',
+      })
+    } catch (error) {
+      setSpecializationsState((current) => ({
+        ...current,
+        isLoading: false,
+        error: error instanceof ApiError ? error.message : 'Не удалось загрузить специализации',
+      }))
+    }
+  }, [])
+
   const loadQuestions = useCallback(async () => {
     setCollectionLoading(setQuestionsState)
 
@@ -266,6 +298,12 @@ function AdminDoctorModerationPage() {
   }, [activeTab, loadUsers])
 
   useEffect(() => {
+    if (activeTab === 'specializations') {
+      loadSpecializations()
+    }
+  }, [activeTab, loadSpecializations])
+
+  useEffect(() => {
     if (activeTab === 'questions') {
       loadQuestions()
     }
@@ -303,6 +341,8 @@ function AdminDoctorModerationPage() {
   const activeTabSearchValue =
     activeTab === 'users'
       ? usersQuery.search
+      : activeTab === 'specializations'
+        ? ''
       : activeTab === 'questions'
         ? questionsQuery.search
         : activeTab === 'answers'
@@ -316,6 +356,8 @@ function AdminDoctorModerationPage() {
 
     if (activeTab === 'users') {
       setUsersQuery((current) => ({ ...current, search: value, offset: 0 }))
+    } else if (activeTab === 'specializations') {
+      return
     } else if (activeTab === 'questions') {
       setQuestionsQuery((current) => ({ ...current, search: value, offset: 0 }))
     } else if (activeTab === 'answers') {
@@ -330,6 +372,9 @@ function AdminDoctorModerationPage() {
 
     if (activeTab === 'users') {
       await loadUsers()
+    }
+    if (activeTab === 'specializations') {
+      await loadSpecializations()
     }
     if (activeTab === 'questions') {
       await loadQuestions()
@@ -459,6 +504,109 @@ function AdminDoctorModerationPage() {
     }
   }
 
+  const handleCreateSpecialization = async (event) => {
+    event.preventDefault()
+
+    const name = specializationDraft.trim()
+    if (!name) {
+      setSpecializationDraftError('Введите название специализации')
+      return
+    }
+
+    setIsSpecializationCreating(true)
+    setSpecializationDraftError('')
+
+    try {
+      const created = await apiClient.createSpecialization({ name })
+      setSpecializationDraft('')
+      setFeedback({
+        type: 'success',
+        text: `Специализация «${created.name}» добавлена.`,
+      })
+      await loadSpecializations()
+    } catch (error) {
+      setSpecializationDraftError(
+        error instanceof ApiError ? error.message : 'Не удалось добавить специализацию',
+      )
+    } finally {
+      setIsSpecializationCreating(false)
+    }
+  }
+
+  const startEditSpecialization = (specialization) => {
+    setEditingSpecializationId(specialization.id)
+    setEditingSpecializationName(specialization.name)
+    setSpecializationDraftError('')
+  }
+
+  const cancelEditSpecialization = () => {
+    setEditingSpecializationId(null)
+    setEditingSpecializationName('')
+  }
+
+  const handleUpdateSpecialization = async (specialization) => {
+    const name = editingSpecializationName.trim()
+    if (!name) {
+      setFeedback({ type: 'error', text: 'Название специализации не может быть пустым.' })
+      return
+    }
+
+    if (name === specialization.name) {
+      cancelEditSpecialization()
+      return
+    }
+
+    setSpecializationSubmittingId(specialization.id)
+
+    try {
+      const updated = await apiClient.updateSpecialization(specialization.id, { name })
+      setFeedback({
+        type: 'success',
+        text: `Специализация переименована в «${updated.name}».`,
+      })
+      cancelEditSpecialization()
+      await loadSpecializations()
+    } catch (error) {
+      setFeedback({
+        type: 'error',
+        text: error instanceof ApiError ? error.message : 'Не удалось переименовать специализацию',
+      })
+    } finally {
+      setSpecializationSubmittingId(null)
+    }
+  }
+
+  const handleDeleteSpecialization = async (specialization) => {
+    const confirmed = window.confirm(
+      `Удалить специализацию «${specialization.name}»? Она также исчезнет из профилей врачей, где была выбрана.`,
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    setSpecializationSubmittingId(specialization.id)
+
+    try {
+      await apiClient.deleteSpecialization(specialization.id)
+      setFeedback({
+        type: 'success',
+        text: `Специализация «${specialization.name}» удалена.`,
+      })
+      if (editingSpecializationId === specialization.id) {
+        cancelEditSpecialization()
+      }
+      await loadSpecializations()
+    } catch (error) {
+      setFeedback({
+        type: 'error',
+        text: error instanceof ApiError ? error.message : 'Не удалось удалить специализацию',
+      })
+    } finally {
+      setSpecializationSubmittingId(null)
+    }
+  }
+
   const handleDeleteUser = async (user) => {
     const confirmed = window.confirm(
       `Удалить пользователя ${getDisplayName(user)}? Будут удалены связанные вопросы, ответы, документы и refresh-сессии.`,
@@ -526,7 +674,7 @@ function AdminDoctorModerationPage() {
   }
 
   return (
-    <TelemedPage
+    <VirtualMedicPage
       activeNav="questions"
       actionLabel="Профиль"
       actionHref={routes.account}
@@ -535,6 +683,8 @@ function AdminDoctorModerationPage() {
           ? 'Обзор платформы'
           : activeTab === 'users'
             ? 'Поиск по пользователям'
+            : activeTab === 'specializations'
+              ? 'Управление специализациями'
             : activeTab === 'questions'
               ? 'Поиск по вопросам'
               : activeTab === 'answers'
@@ -542,16 +692,16 @@ function AdminDoctorModerationPage() {
                 : 'Поиск по заявкам врачей'
       }
       searchValue={activeTabSearchValue}
-      onSearchChange={activeTab === 'overview' ? null : handleHeaderSearchChange}
+      onSearchChange={activeTab === 'overview' || activeTab === 'specializations' ? null : handleHeaderSearchChange}
     >
-      <section className="tm-page-section">
-        <div className="tm-shell">
-          <div className="tm-breadcrumbs">
+      <section className="vm-page-section">
+        <div className="vm-shell">
+          <div className="vm-breadcrumbs">
             <span>Главная</span>
             <span>Админ панель</span>
           </div>
 
-          <div className="tm-page-hero">
+          <div className="vm-page-hero">
             <div>
               <h1>Операторская админ панель</h1>
               <p>
@@ -559,19 +709,19 @@ function AdminDoctorModerationPage() {
                 верификацию и оперативные действия без переходов по разным экранам.
               </p>
             </div>
-            <button className="tm-button" type="button" onClick={refreshVisibleData}>
+            <button className="vm-button" type="button" onClick={refreshVisibleData}>
               Обновить данные
             </button>
           </div>
 
           {feedback.text ? (
-            <section className={`tm-auth-message ${feedback.type === 'error' ? 'is-error' : 'is-success'}`}>
+            <section className={`vm-auth-message ${feedback.type === 'error' ? 'is-error' : 'is-success'}`}>
               {feedback.text}
             </section>
           ) : null}
 
-          <section className="tm-card tm-detail-card">
-            <div className="tm-admin-section-head">
+          <section className="vm-card vm-detail-card">
+            <div className="vm-admin-section-head">
               <div>
                 <h2>Заглушка сайта</h2>
                 <p>
@@ -580,7 +730,7 @@ function AdminDoctorModerationPage() {
                 </p>
               </div>
               <button
-                className={`tm-button ${maintenanceState?.enabled ? 'tm-button--danger' : ''}`}
+                className={`vm-button ${maintenanceState?.enabled ? 'vm-button--danger' : ''}`}
                 type="button"
                 onClick={handleMaintenanceToggle}
                 disabled={!maintenanceState || isMaintenanceSubmitting}
@@ -593,23 +743,23 @@ function AdminDoctorModerationPage() {
               </button>
             </div>
 
-            <div className="tm-inline-meta">
-              <span className="tm-file-chip">
+            <div className="vm-inline-meta">
+              <span className="vm-file-chip">
                 Статус: {maintenanceState?.enabled ? 'включена' : 'выключена'}
               </span>
-              <span className="tm-muted">
+              <span className="vm-muted">
                 Админ и superuser обходят ограничение автоматически после входа.
               </span>
             </div>
 
-            {maintenanceError ? <p className="tm-form-error">{maintenanceError}</p> : null}
+            {maintenanceError ? <p className="vm-form-error">{maintenanceError}</p> : null}
           </section>
 
-          <div className="tm-admin-tabs">
+          <div className="vm-admin-tabs">
             {ADMIN_TABS.map((item) => (
               <button
                 key={item.key}
-                className={`tm-admin-tab ${activeTab === item.key ? 'is-active' : ''}`}
+                className={`vm-admin-tab ${activeTab === item.key ? 'is-active' : ''}`}
                 type="button"
                 onClick={() => {
                   setFeedback({ type: '', text: '' })
@@ -635,91 +785,91 @@ function AdminDoctorModerationPage() {
               ) : null}
 
               {dashboard ? (
-                <div className="tm-grid">
-                  <div className="tm-admin-stats-grid">
+                <div className="vm-grid">
+                  <div className="vm-admin-stats-grid">
                     {statsCards.map((item) => (
-                      <article className="tm-card tm-admin-stat-card" key={item.label}>
-                        <span className="tm-overline">{item.label}</span>
+                      <article className="vm-card vm-admin-stat-card" key={item.label}>
+                        <span className="vm-overline">{item.label}</span>
                         <strong>{item.value}</strong>
                       </article>
                     ))}
                   </div>
 
-                  <div className="tm-admin-overview-grid">
-                    <section className="tm-card tm-detail-card">
-                      <div className="tm-admin-section-head">
+                  <div className="vm-admin-overview-grid">
+                    <section className="vm-card vm-detail-card">
+                      <div className="vm-admin-section-head">
                         <h2>Последние пользователи</h2>
-                        <button className="tm-button tm-button--soft" type="button" onClick={() => setActiveTab('users')}>
+                        <button className="vm-button vm-button--soft" type="button" onClick={() => setActiveTab('users')}>
                           Открыть раздел
                         </button>
                       </div>
-                      <div className="tm-admin-list">
+                      <div className="vm-admin-list">
                         {dashboard.users.map((user) => (
-                          <article className="tm-admin-row" key={user.id}>
-                            <div className="tm-admin-row__main">
+                          <article className="vm-admin-row" key={user.id}>
+                            <div className="vm-admin-row__main">
                               <strong>{getDisplayName(user)}</strong>
-                              <div className="tm-inline-meta">
-                                <span className="tm-muted">@{user.username}</span>
-                                <span className="tm-file-chip">{getRoleLabel(user.role)}</span>
-                                {!user.is_active ? <span className="tm-file-chip">заблокирован</span> : null}
+                              <div className="vm-inline-meta">
+                                <span className="vm-muted">@{user.username}</span>
+                                <span className="vm-file-chip">{getRoleLabel(user.role)}</span>
+                                {!user.is_active ? <span className="vm-file-chip">заблокирован</span> : null}
                               </div>
                             </div>
-                            <span className="tm-muted">{formatDateTime(user.created_at)}</span>
+                            <span className="vm-muted">{formatDateTime(user.created_at)}</span>
                           </article>
                         ))}
                       </div>
                     </section>
 
-                    <section className="tm-card tm-detail-card">
-                      <div className="tm-admin-section-head">
+                    <section className="vm-card vm-detail-card">
+                      <div className="vm-admin-section-head">
                         <h2>Заявки врачей</h2>
-                        <button className="tm-button tm-button--soft" type="button" onClick={() => setActiveTab('doctors')}>
+                        <button className="vm-button vm-button--soft" type="button" onClick={() => setActiveTab('doctors')}>
                           Открыть раздел
                         </button>
                       </div>
-                      <div className="tm-admin-list">
+                      <div className="vm-admin-list">
                         {dashboard.pending_doctors.length ? (
                           dashboard.pending_doctors.map((doctor) => (
-                            <article className="tm-admin-row" key={doctor.id}>
-                              <div className="tm-admin-row__main">
+                            <article className="vm-admin-row" key={doctor.id}>
+                              <div className="vm-admin-row__main">
                                 <strong>{getDisplayName(doctor)}</strong>
-                                <div className="tm-inline-meta">
+                                <div className="vm-inline-meta">
                                   {doctor.specializations.map((item) => (
-                                    <span className="tm-file-chip" key={item.id}>{item.name}</span>
+                                    <span className="vm-file-chip" key={item.id}>{item.name}</span>
                                   ))}
                                 </div>
                               </div>
-                              <button className="tm-button tm-button--soft" type="button" onClick={() => openDoctorDetails(doctor.id)}>
+                              <button className="vm-button vm-button--soft" type="button" onClick={() => openDoctorDetails(doctor.id)}>
                                 Карточка
                               </button>
                             </article>
                           ))
                         ) : (
-                          <p className="tm-muted">Новых заявок на проверку сейчас нет.</p>
+                          <p className="vm-muted">Новых заявок на проверку сейчас нет.</p>
                         )}
                       </div>
                     </section>
                   </div>
 
-                  <div className="tm-admin-overview-grid">
-                    <section className="tm-card tm-detail-card">
-                      <div className="tm-admin-section-head">
+                  <div className="vm-admin-overview-grid">
+                    <section className="vm-card vm-detail-card">
+                      <div className="vm-admin-section-head">
                         <h2>Последние вопросы</h2>
-                        <button className="tm-button tm-button--soft" type="button" onClick={() => setActiveTab('questions')}>
+                        <button className="vm-button vm-button--soft" type="button" onClick={() => setActiveTab('questions')}>
                           Открыть раздел
                         </button>
                       </div>
-                      <div className="tm-admin-list">
+                      <div className="vm-admin-list">
                         {dashboard.questions.map((question) => (
-                          <article className="tm-admin-row" key={question.id}>
-                            <div className="tm-admin-row__main">
+                          <article className="vm-admin-row" key={question.id}>
+                            <div className="vm-admin-row__main">
                               <strong>{summarizeQuestion(question.text, 92)}</strong>
-                              <div className="tm-inline-meta">
-                                <span className="tm-muted">{getDisplayName(question.author)}</span>
-                                <span className="tm-muted">Ответов: {question.comments_count}</span>
+                              <div className="vm-inline-meta">
+                                <span className="vm-muted">{getDisplayName(question.author)}</span>
+                                <span className="vm-muted">Ответов: {question.comments_count}</span>
                               </div>
                             </div>
-                            <AppLink className="tm-link" href={buildQuestionHref(question.id)}>
+                            <AppLink className="vm-link" href={buildQuestionHref(question.id)}>
                               Открыть
                             </AppLink>
                           </article>
@@ -727,21 +877,21 @@ function AdminDoctorModerationPage() {
                       </div>
                     </section>
 
-                    <section className="tm-card tm-detail-card">
-                      <div className="tm-admin-section-head">
+                    <section className="vm-card vm-detail-card">
+                      <div className="vm-admin-section-head">
                         <h2>Последние ответы</h2>
-                        <button className="tm-button tm-button--soft" type="button" onClick={() => setActiveTab('answers')}>
+                        <button className="vm-button vm-button--soft" type="button" onClick={() => setActiveTab('answers')}>
                           Открыть раздел
                         </button>
                       </div>
-                      <div className="tm-admin-list">
+                      <div className="vm-admin-list">
                         {dashboard.recent_answers.map((answer) => (
-                          <article className="tm-admin-row" key={answer.id}>
-                            <div className="tm-admin-row__main">
+                          <article className="vm-admin-row" key={answer.id}>
+                            <div className="vm-admin-row__main">
                               <strong>{getDisplayName(answer.author)}</strong>
                               <p>{summarizeQuestion(answer.text, 110)}</p>
                             </div>
-                            <AppLink className="tm-link" href={buildQuestionHref(answer.question_id)}>
+                            <AppLink className="vm-link" href={buildQuestionHref(answer.question_id)}>
                               К вопросу
                             </AppLink>
                           </article>
@@ -755,8 +905,8 @@ function AdminDoctorModerationPage() {
           ) : null}
 
           {activeTab === 'users' ? (
-            <section className="tm-card tm-detail-card">
-              <div className="tm-admin-section-head">
+            <section className="vm-card vm-detail-card">
+              <div className="vm-admin-section-head">
                 <div>
                   <h2>Пользователи</h2>
                   <p>Поиск, фильтрация, блокировка и удаление аккаунтов.</p>
@@ -765,14 +915,14 @@ function AdminDoctorModerationPage() {
 
               <AdminToolbar>
                 <input
-                  className="tm-input"
+                  className="vm-input"
                   type="search"
                   placeholder="Поиск по username или ФИО"
                   value={usersQuery.search}
                   onChange={(event) => setUsersQuery((current) => ({ ...current, search: event.target.value, offset: 0 }))}
                 />
                 <select
-                  className="tm-select"
+                  className="vm-select"
                   value={usersQuery.role}
                   onChange={(event) => setUsersQuery((current) => ({ ...current, role: event.target.value, offset: 0 }))}
                 >
@@ -783,7 +933,7 @@ function AdminDoctorModerationPage() {
                   <option value="superuser">Superuser</option>
                 </select>
                 <select
-                  className="tm-select"
+                  className="vm-select"
                   value={usersQuery.is_active}
                   onChange={(event) => setUsersQuery((current) => ({ ...current, is_active: event.target.value, offset: 0 }))}
                 >
@@ -792,7 +942,7 @@ function AdminDoctorModerationPage() {
                   <option value="false">Только заблокированные</option>
                 </select>
                 <select
-                  className="tm-select"
+                  className="vm-select"
                   value={usersQuery.is_verified_doctor}
                   onChange={(event) =>
                     setUsersQuery((current) => ({ ...current, is_verified_doctor: event.target.value, offset: 0 }))
@@ -804,35 +954,35 @@ function AdminDoctorModerationPage() {
                 </select>
               </AdminToolbar>
 
-              {usersState.isLoading ? <p className="tm-muted">Загружаем пользователей...</p> : null}
-              {!usersState.isLoading && usersState.error ? <p className="tm-form-error">{usersState.error}</p> : null}
+              {usersState.isLoading ? <p className="vm-muted">Загружаем пользователей...</p> : null}
+              {!usersState.isLoading && usersState.error ? <p className="vm-form-error">{usersState.error}</p> : null}
               {!usersState.isLoading && !usersState.error && !usersState.items.length ? (
-                <p className="tm-muted">По заданным фильтрам пользователи не найдены.</p>
+                <p className="vm-muted">По заданным фильтрам пользователи не найдены.</p>
               ) : null}
 
-              <div className="tm-admin-list">
+              <div className="vm-admin-list">
                 {usersState.items.map((user) => (
-                  <article className="tm-admin-row" key={user.id}>
-                    <div className="tm-admin-row__main">
+                  <article className="vm-admin-row" key={user.id}>
+                    <div className="vm-admin-row__main">
                       <strong>{getDisplayName(user)}</strong>
-                      <div className="tm-inline-meta">
-                        <span className="tm-muted">@{user.username}</span>
-                        <span className="tm-file-chip">{getRoleLabel(user.role)}</span>
-                        {!user.is_active ? <span className="tm-file-chip">заблокирован</span> : null}
-                        {user.is_verified_doctor ? <span className="tm-file-chip">verified doctor</span> : null}
+                      <div className="vm-inline-meta">
+                        <span className="vm-muted">@{user.username}</span>
+                        <span className="vm-file-chip">{getRoleLabel(user.role)}</span>
+                        {!user.is_active ? <span className="vm-file-chip">заблокирован</span> : null}
+                        {user.is_verified_doctor ? <span className="vm-file-chip">verified doctor</span> : null}
                       </div>
-                      <div className="tm-inline-meta">
-                        <span className="tm-muted">Вопросов: {user.questions_count}</span>
-                        <span className="tm-muted">Ответов: {user.comments_count}</span>
-                        <span className="tm-muted">Документов: {user.qualification_documents_count}</span>
-                        <span className="tm-muted">Создан: {formatDateTime(user.created_at)}</span>
+                      <div className="vm-inline-meta">
+                        <span className="vm-muted">Вопросов: {user.questions_count}</span>
+                        <span className="vm-muted">Ответов: {user.comments_count}</span>
+                        <span className="vm-muted">Документов: {user.qualification_documents_count}</span>
+                        <span className="vm-muted">Создан: {formatDateTime(user.created_at)}</span>
                       </div>
                     </div>
-                    <div className="tm-admin-row__actions">
-                      <button className="tm-button tm-button--soft" type="button" onClick={() => handleToggleUserStatus(user)}>
+                    <div className="vm-admin-row__actions">
+                      <button className="vm-button vm-button--soft" type="button" onClick={() => handleToggleUserStatus(user)}>
                         {user.is_active ? 'Заблокировать' : 'Разблокировать'}
                       </button>
-                      <button className="tm-button tm-button--danger" type="button" onClick={() => handleDeleteUser(user)}>
+                      <button className="vm-button vm-button--danger" type="button" onClick={() => handleDeleteUser(user)}>
                         Удалить
                       </button>
                     </div>
@@ -850,9 +1000,115 @@ function AdminDoctorModerationPage() {
             </section>
           ) : null}
 
+          {activeTab === 'specializations' ? (
+            <section className="vm-card vm-detail-card">
+              <div className="vm-admin-section-head">
+                <div>
+                  <h2>Специализации врачей</h2>
+                  <p>Справочник направлений, который используется при регистрации врачей и в фильтрах каталога.</p>
+                </div>
+              </div>
+
+              <form className="vm-admin-toolbar" onSubmit={handleCreateSpecialization}>
+                <input
+                  className="vm-input"
+                  type="text"
+                  placeholder="Например: Кардиолог"
+                  value={specializationDraft}
+                  onChange={(event) => {
+                    setSpecializationDraft(event.target.value)
+                    setSpecializationDraftError('')
+                  }}
+                  maxLength={120}
+                />
+                <button className="vm-button" type="submit" disabled={isSpecializationCreating}>
+                  {isSpecializationCreating ? 'Добавляем...' : 'Добавить'}
+                </button>
+              </form>
+              {specializationDraftError ? <p className="vm-form-error">{specializationDraftError}</p> : null}
+
+              {specializationsState.isLoading ? <p className="vm-muted">Загружаем специализации...</p> : null}
+              {!specializationsState.isLoading && specializationsState.error ? (
+                <p className="vm-form-error">{specializationsState.error}</p>
+              ) : null}
+              {!specializationsState.isLoading && !specializationsState.error && !specializationsState.items.length ? (
+                <p className="vm-muted">Специализации пока не добавлены.</p>
+              ) : null}
+
+              <div className="vm-admin-list">
+                {specializationsState.items.map((specialization) => {
+                  const isEditing = editingSpecializationId === specialization.id
+                  const isSubmitting = specializationSubmittingId === specialization.id
+
+                  return (
+                    <article className="vm-admin-row" key={specialization.id}>
+                      <div className="vm-admin-row__main">
+                        {isEditing ? (
+                          <input
+                            className="vm-input"
+                            type="text"
+                            value={editingSpecializationName}
+                            onChange={(event) => setEditingSpecializationName(event.target.value)}
+                            maxLength={120}
+                            autoFocus
+                          />
+                        ) : (
+                          <strong>{specialization.name}</strong>
+                        )}
+                        <div className="vm-inline-meta">
+                          <span className="vm-muted">ID: {specialization.id}</span>
+                          <span className="vm-muted">Доступна для выбора врачами</span>
+                        </div>
+                      </div>
+                      <div className="vm-admin-row__actions">
+                        {isEditing ? (
+                          <>
+                            <button
+                              className="vm-button"
+                              type="button"
+                              onClick={() => handleUpdateSpecialization(specialization)}
+                              disabled={isSubmitting}
+                            >
+                              {isSubmitting ? 'Сохраняем...' : 'Сохранить'}
+                            </button>
+                            <button
+                              className="vm-button vm-button--soft"
+                              type="button"
+                              onClick={cancelEditSpecialization}
+                              disabled={isSubmitting}
+                            >
+                              Отмена
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            className="vm-button vm-button--soft"
+                            type="button"
+                            onClick={() => startEditSpecialization(specialization)}
+                            disabled={isSubmitting}
+                          >
+                            Переименовать
+                          </button>
+                        )}
+                        <button
+                          className="vm-button vm-button--danger"
+                          type="button"
+                          onClick={() => handleDeleteSpecialization(specialization)}
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? 'Удаляем...' : 'Удалить'}
+                        </button>
+                      </div>
+                    </article>
+                  )
+                })}
+              </div>
+            </section>
+          ) : null}
+
           {activeTab === 'questions' ? (
-            <section className="tm-card tm-detail-card">
-              <div className="tm-admin-section-head">
+            <section className="vm-card vm-detail-card">
+              <div className="vm-admin-section-head">
                 <div>
                   <h2>Вопросы</h2>
                   <p>Фильтрация по статусу ответа и удаление проблемных публикаций.</p>
@@ -861,7 +1117,7 @@ function AdminDoctorModerationPage() {
 
               <AdminToolbar>
                 <input
-                  className="tm-input"
+                  className="vm-input"
                   type="search"
                   placeholder="Поиск по тексту вопроса"
                   value={questionsQuery.search}
@@ -870,7 +1126,7 @@ function AdminDoctorModerationPage() {
                   }
                 />
                 <select
-                  className="tm-select"
+                  className="vm-select"
                   value={questionsQuery.answered}
                   onChange={(event) =>
                     setQuestionsQuery((current) => ({ ...current, answered: event.target.value, offset: 0 }))
@@ -882,33 +1138,33 @@ function AdminDoctorModerationPage() {
                 </select>
               </AdminToolbar>
 
-              {questionsState.isLoading ? <p className="tm-muted">Загружаем вопросы...</p> : null}
-              {!questionsState.isLoading && questionsState.error ? <p className="tm-form-error">{questionsState.error}</p> : null}
+              {questionsState.isLoading ? <p className="vm-muted">Загружаем вопросы...</p> : null}
+              {!questionsState.isLoading && questionsState.error ? <p className="vm-form-error">{questionsState.error}</p> : null}
               {!questionsState.isLoading && !questionsState.error && !questionsState.items.length ? (
-                <p className="tm-muted">Под эти фильтры вопросы не найдены.</p>
+                <p className="vm-muted">Под эти фильтры вопросы не найдены.</p>
               ) : null}
 
-              <div className="tm-admin-list">
+              <div className="vm-admin-list">
                 {questionsState.items.map((question) => (
-                  <article className="tm-admin-row" key={question.id}>
-                    <div className="tm-admin-row__main">
+                  <article className="vm-admin-row" key={question.id}>
+                    <div className="vm-admin-row__main">
                       <strong>{summarizeQuestion(question.text, 120)}</strong>
-                      <div className="tm-inline-meta">
-                        <span className="tm-muted">Автор: {getDisplayName(question.author)}</span>
-                        <span className="tm-muted">Ответов: {question.comments_count}</span>
-                        <span className="tm-muted">Создан: {formatDateTime(question.created_at)}</span>
+                      <div className="vm-inline-meta">
+                        <span className="vm-muted">Автор: {getDisplayName(question.author)}</span>
+                        <span className="vm-muted">Ответов: {question.comments_count}</span>
+                        <span className="vm-muted">Создан: {formatDateTime(question.created_at)}</span>
                         {question.latest_answer_author ? (
-                          <span className="tm-muted">
+                          <span className="vm-muted">
                             Последний ответ: {getDisplayName(question.latest_answer_author)}
                           </span>
                         ) : null}
                       </div>
                     </div>
-                    <div className="tm-admin-row__actions">
-                      <AppLink className="tm-button tm-button--soft" href={buildQuestionHref(question.id)}>
+                    <div className="vm-admin-row__actions">
+                      <AppLink className="vm-button vm-button--soft" href={buildQuestionHref(question.id)}>
                         Открыть
                       </AppLink>
-                      <button className="tm-button tm-button--danger" type="button" onClick={() => handleDeleteQuestion(question)}>
+                      <button className="vm-button vm-button--danger" type="button" onClick={() => handleDeleteQuestion(question)}>
                         Удалить
                       </button>
                     </div>
@@ -929,8 +1185,8 @@ function AdminDoctorModerationPage() {
           ) : null}
 
           {activeTab === 'answers' ? (
-            <section className="tm-card tm-detail-card">
-              <div className="tm-admin-section-head">
+            <section className="vm-card vm-detail-card">
+              <div className="vm-admin-section-head">
                 <div>
                   <h2>Ответы врачей</h2>
                   <p>Поиск по тексту ответа и быстрая модерация нежелательного контента.</p>
@@ -939,7 +1195,7 @@ function AdminDoctorModerationPage() {
 
               <AdminToolbar>
                 <input
-                  className="tm-input"
+                  className="vm-input"
                   type="search"
                   placeholder="Поиск по тексту ответа"
                   value={answersQuery.search}
@@ -947,28 +1203,28 @@ function AdminDoctorModerationPage() {
                 />
               </AdminToolbar>
 
-              {answersState.isLoading ? <p className="tm-muted">Загружаем ответы...</p> : null}
-              {!answersState.isLoading && answersState.error ? <p className="tm-form-error">{answersState.error}</p> : null}
+              {answersState.isLoading ? <p className="vm-muted">Загружаем ответы...</p> : null}
+              {!answersState.isLoading && answersState.error ? <p className="vm-form-error">{answersState.error}</p> : null}
               {!answersState.isLoading && !answersState.error && !answersState.items.length ? (
-                <p className="tm-muted">Ответы по заданным фильтрам не найдены.</p>
+                <p className="vm-muted">Ответы по заданным фильтрам не найдены.</p>
               ) : null}
 
-              <div className="tm-admin-list">
+              <div className="vm-admin-list">
                 {answersState.items.map((answer) => (
-                  <article className="tm-admin-row" key={answer.id}>
-                    <div className="tm-admin-row__main">
+                  <article className="vm-admin-row" key={answer.id}>
+                    <div className="vm-admin-row__main">
                       <strong>{getDisplayName(answer.author)}</strong>
                       <p>{summarizeQuestion(answer.text, 160)}</p>
-                      <div className="tm-inline-meta">
-                        <span className="tm-muted">Вопрос #{answer.question_id}</span>
-                        <span className="tm-muted">Создан: {formatDateTime(answer.created_at)}</span>
+                      <div className="vm-inline-meta">
+                        <span className="vm-muted">Вопрос #{answer.question_id}</span>
+                        <span className="vm-muted">Создан: {formatDateTime(answer.created_at)}</span>
                       </div>
                     </div>
-                    <div className="tm-admin-row__actions">
-                      <AppLink className="tm-button tm-button--soft" href={buildQuestionHref(answer.question_id)}>
+                    <div className="vm-admin-row__actions">
+                      <AppLink className="vm-button vm-button--soft" href={buildQuestionHref(answer.question_id)}>
                         К вопросу
                       </AppLink>
-                      <button className="tm-button tm-button--danger" type="button" onClick={() => handleDeleteAnswer(answer)}>
+                      <button className="vm-button vm-button--danger" type="button" onClick={() => handleDeleteAnswer(answer)}>
                         Удалить
                       </button>
                     </div>
@@ -987,8 +1243,8 @@ function AdminDoctorModerationPage() {
           ) : null}
 
           {activeTab === 'doctors' ? (
-            <section className="tm-card tm-detail-card">
-              <div className="tm-admin-section-head">
+            <section className="vm-card vm-detail-card">
+              <div className="vm-admin-section-head">
                 <div>
                   <h2>Заявки на подтверждение врача</h2>
                   <p>Проверка документов, профиля и ручное управление верификацией.</p>
@@ -997,7 +1253,7 @@ function AdminDoctorModerationPage() {
 
               <AdminToolbar>
                 <input
-                  className="tm-input"
+                  className="vm-input"
                   type="search"
                   placeholder="Поиск по врачу или username"
                   value={pendingQuery.search}
@@ -1005,27 +1261,27 @@ function AdminDoctorModerationPage() {
                 />
               </AdminToolbar>
 
-              {pendingState.isLoading ? <p className="tm-muted">Загружаем заявки врачей...</p> : null}
-              {!pendingState.isLoading && pendingState.error ? <p className="tm-form-error">{pendingState.error}</p> : null}
+              {pendingState.isLoading ? <p className="vm-muted">Загружаем заявки врачей...</p> : null}
+              {!pendingState.isLoading && pendingState.error ? <p className="vm-form-error">{pendingState.error}</p> : null}
               {!pendingState.isLoading && !pendingState.error && !pendingState.items.length ? (
-                <p className="tm-muted">Сейчас нет врачей, ожидающих проверку.</p>
+                <p className="vm-muted">Сейчас нет врачей, ожидающих проверку.</p>
               ) : null}
 
-              <div className="tm-admin-list">
+              <div className="vm-admin-list">
                 {pendingState.items.map((doctor) => (
-                  <article className="tm-admin-row" key={doctor.id}>
-                    <div className="tm-admin-row__main">
+                  <article className="vm-admin-row" key={doctor.id}>
+                    <div className="vm-admin-row__main">
                       <strong>{getDisplayName(doctor)}</strong>
-                      <div className="tm-inline-meta">
-                        <span className="tm-muted">@{doctor.username}</span>
+                      <div className="vm-inline-meta">
+                        <span className="vm-muted">@{doctor.username}</span>
                         {doctor.specializations.map((item) => (
-                          <span className="tm-file-chip" key={item.id}>{item.name}</span>
+                          <span className="vm-file-chip" key={item.id}>{item.name}</span>
                         ))}
-                        <span className="tm-muted">Документов: {doctor.qualification_documents.length}</span>
+                        <span className="vm-muted">Документов: {doctor.qualification_documents.length}</span>
                       </div>
                     </div>
-                    <div className="tm-admin-row__actions">
-                      <button className="tm-button tm-button--soft" type="button" onClick={() => openDoctorDetails(doctor.id)}>
+                    <div className="vm-admin-row__actions">
+                      <button className="vm-button vm-button--soft" type="button" onClick={() => openDoctorDetails(doctor.id)}>
                         Открыть карточку
                       </button>
                     </div>
@@ -1053,7 +1309,7 @@ function AdminDoctorModerationPage() {
                 <span className="public-kicker">Doctor moderation</span>
                 <h2 className="public-panel__title">Карточка врача</h2>
               </div>
-              <button className="tm-button tm-button--soft" type="button" onClick={() => setSelectedDoctor(null)}>
+              <button className="vm-button vm-button--soft" type="button" onClick={() => setSelectedDoctor(null)}>
                 Закрыть
               </button>
             </div>
@@ -1094,7 +1350,7 @@ function AdminDoctorModerationPage() {
                           <div>{formatFileSize(document.size_bytes)} · {formatDateTime(document.created_at)}</div>
                         </div>
                         <button
-                          className="tm-button tm-button--soft"
+                          className="vm-button vm-button--soft"
                           type="button"
                           onClick={() => handleDownloadDocument(document.id)}
                           disabled={downloadingDocumentId === document.id}
@@ -1110,7 +1366,7 @@ function AdminDoctorModerationPage() {
 
             <div className="modal-card__actions">
               <button
-                className="tm-button"
+                className="vm-button"
                 type="button"
                 onClick={handleVerifyToggle}
                 disabled={!selectedDoctor || isVerifySubmitting}
@@ -1121,7 +1377,7 @@ function AdminDoctorModerationPage() {
           </section>
         </div>
       ) : null}
-    </TelemedPage>
+    </VirtualMedicPage>
   )
 }
 

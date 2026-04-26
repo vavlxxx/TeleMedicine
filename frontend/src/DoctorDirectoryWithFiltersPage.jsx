@@ -4,8 +4,8 @@ import { useAuth } from './auth/AuthContext'
 import { AppLink } from './router'
 import { getDefaultAuthenticatedPath, routes } from './routes'
 import { buildDoctorProfileHref, getDisplayName, getInitials, parsePositiveInteger } from './publicPageUtils'
-import { TelemedPage } from './TelemedLayout'
-import { getDoctorVisualProfile } from './telemedReference'
+import { VirtualMedicPage } from './VirtualMedicLayout'
+import { getDoctorVisualProfile } from './virtualmedicReference'
 
 const DOCTORS_PAGE_SIZE = 18
 
@@ -106,7 +106,7 @@ function DoctorDirectoryWithFiltersPage() {
   const actionLabel = auth.isAuthenticated ? 'Личный кабинет' : 'Войти'
 
   return (
-    <TelemedPage
+    <VirtualMedicPage
       activeNav="doctors"
       actionHref={actionHref}
       actionLabel={actionLabel}
@@ -114,23 +114,23 @@ function DoctorDirectoryWithFiltersPage() {
       searchValue={searchQuery}
       onSearchChange={(event) => setSearchQuery(event.target.value)}
     >
-      <section className="tm-page-section">
-        <div className="tm-shell">
-          <div className="tm-breadcrumbs">
+      <section className="vm-page-section">
+        <div className="vm-shell">
+          <div className="vm-breadcrumbs">
             <span>Главная</span>
             <span>Каталог врачей</span>
           </div>
 
-          <div className="tm-page-hero">
+          <div className="vm-page-hero">
             <div>
               <h1>Специалисты онлайн</h1>
               <p>Найдите подходящего врача и перейдите в детальную карточку для консультации.</p>
             </div>
           </div>
 
-          <div className="tm-chip-row">
+          <div className="vm-chip-row">
             <button
-              className={`tm-chip ${selectedSpecializationId === null ? 'is-active' : ''}`}
+              className={`vm-chip ${selectedSpecializationId === null ? 'is-active' : ''}`}
               type="button"
               onClick={() => setSelectedSpecializationId(null)}
             >
@@ -139,7 +139,7 @@ function DoctorDirectoryWithFiltersPage() {
             {specializations.map((specialization) => (
               <button
                 key={specialization.id}
-                className={`tm-chip ${selectedSpecializationId === specialization.id ? 'is-active' : ''}`}
+                className={`vm-chip ${selectedSpecializationId === specialization.id ? 'is-active' : ''}`}
                 type="button"
                 onClick={() => setSelectedSpecializationId(specialization.id)}
               >
@@ -148,11 +148,11 @@ function DoctorDirectoryWithFiltersPage() {
             ))}
           </div>
 
-          <div className="tm-grid tm-directory-layout">
-            <aside className="tm-card tm-filter-panel">
-              <div className="tm-filter-panel__header">
+          <div className="vm-grid vm-directory-layout">
+            <aside className="vm-card vm-filter-panel">
+              <div className="vm-filter-panel__header">
                 <h2>Фильтры</h2>
-                <button className="tm-button tm-button--ghost" type="button" onClick={() => {
+                <button className="vm-button vm-button--ghost" type="button" onClick={() => {
                   setSelectedSpecializationId(null)
                   setMinimumExperience(0)
                   setMinimumRating(0)
@@ -165,14 +165,14 @@ function DoctorDirectoryWithFiltersPage() {
                 </button>
               </div>
 
-              <div className="tm-field-stack">
-                <div className="tm-field-block">
-                  <label className="tm-field-label">
+              <div className="vm-field-stack">
+                <div className="vm-field-block">
+                  <label className="vm-field-label">
                     <span className="material-symbols-outlined">medical_services</span>
                     Специальность
                   </label>
                   <select
-                    className="tm-select"
+                    className="vm-select"
                     value={selectedSpecializationId || ''}
                     onChange={(event) => setSelectedSpecializationId(parsePositiveInteger(event.target.value))}
                   >
@@ -185,12 +185,12 @@ function DoctorDirectoryWithFiltersPage() {
                   </select>
                 </div>
 
-                <div className="tm-field-block">
-                  <label className="tm-field-label">
+                <div className="vm-field-block">
+                  <label className="vm-field-label">
                     <span className="material-symbols-outlined">radio_button_checked</span>
                     Сейчас на сайте
                   </label>
-                  <label className="tm-checkbox">
+                  <label className="vm-checkbox">
                     <input
                       type="checkbox"
                       checked={onlineOnly}
@@ -200,14 +200,14 @@ function DoctorDirectoryWithFiltersPage() {
                   </label>
                 </div>
 
-                <div className="tm-field-block">
-                  <label className="tm-field-label">
+                <div className="vm-field-block">
+                  <label className="vm-field-label">
                     <span className="material-symbols-outlined">workspace_premium</span>
                     Опыт работы
                   </label>
-                  <div className="tm-checkbox-list">
+                  <div className="vm-checkbox-list">
                     {[0, 5, 10, 15].map((years) => (
-                      <label className="tm-checkbox" key={years}>
+                      <label className="vm-checkbox" key={years}>
                         <input
                           type="radio"
                           name="experience"
@@ -220,21 +220,21 @@ function DoctorDirectoryWithFiltersPage() {
                   </div>
                 </div>
 
-                <div className="tm-field-block">
-                  <label className="tm-field-label">
+                <div className="vm-field-block">
+                  <label className="vm-field-label">
                     <span className="material-symbols-outlined">payments</span>
                     Стоимость приема
                   </label>
-                  <div className="tm-inline-meta">
+                  <div className="vm-inline-meta">
                     <input
-                      className="tm-input"
+                      className="vm-input"
                       type="number"
                       placeholder="От"
                       value={minimumPrice}
                       onChange={(event) => setMinimumPrice(event.target.value)}
                     />
                     <input
-                      className="tm-input"
+                      className="vm-input"
                       type="number"
                       placeholder="До"
                       value={maximumPrice}
@@ -243,14 +243,14 @@ function DoctorDirectoryWithFiltersPage() {
                   </div>
                 </div>
 
-                <div className="tm-field-block">
-                  <label className="tm-field-label">
+                <div className="vm-field-block">
+                  <label className="vm-field-label">
                     <span className="material-symbols-outlined">star</span>
                     Рейтинг
                   </label>
-                  <div className="tm-checkbox-list">
+                  <div className="vm-checkbox-list">
                     {[0, 4.5, 4.8].map((value) => (
-                      <label className="tm-checkbox" key={value}>
+                      <label className="vm-checkbox" key={value}>
                         <input
                           type="radio"
                           name="rating"
@@ -263,7 +263,7 @@ function DoctorDirectoryWithFiltersPage() {
                   </div>
                 </div>
 
-                <button className="tm-button" type="button">
+                <button className="vm-button" type="button">
                   Применить
                 </button>
               </div>
@@ -271,14 +271,14 @@ function DoctorDirectoryWithFiltersPage() {
 
             <div>
               {isLoading ? (
-                <section className="tm-card tm-empty-state">
+                <section className="vm-card vm-empty-state">
                   <h2>Загружаем каталог</h2>
                   <p>Подтягиваем список врачей и справочник специализаций.</p>
                 </section>
               ) : null}
 
               {!isLoading && errorMessage ? (
-                <section className="tm-card tm-empty-state">
+                <section className="vm-card vm-empty-state">
                   <h2>Каталог не загрузился</h2>
                   <p>{errorMessage}</p>
                 </section>
@@ -286,45 +286,45 @@ function DoctorDirectoryWithFiltersPage() {
 
               {!isLoading && !errorMessage ? (
                 <>
-                  <div className="tm-results-grid">
+                  <div className="vm-results-grid">
                     {filteredDoctors.map((doctor) => (
-                      <article className="tm-card tm-doctor-card" key={doctor.id}>
+                      <article className="vm-card vm-doctor-card" key={doctor.id}>
                         <div
-                          className="tm-doctor-card__visual"
+                          className="vm-doctor-card__visual"
                           style={{ background: doctor.visualProfile.theme.background }}
                         >
-                          <span className="tm-rating-badge">
+                          <span className="vm-rating-badge">
                             <span className="material-symbols-outlined">star</span>
                             {doctor.visualProfile.rating}
                           </span>
                           {doctor.is_online ? (
-                            <span className="tm-online-badge">
-                              <span className="tm-online-dot" aria-hidden="true" />
+                            <span className="vm-online-badge">
+                              <span className="vm-online-dot" aria-hidden="true" />
                               Сейчас на сайте
                             </span>
                           ) : null}
-                          <div className="tm-doctor-portrait" aria-hidden="true">
+                          <div className="vm-doctor-portrait" aria-hidden="true">
                             {getInitials(doctor)}
                           </div>
                         </div>
 
-                        <div className="tm-doctor-card__body">
+                        <div className="vm-doctor-card__body">
                           <div>
-                            <div className="tm-overline">
+                            <div className="vm-overline">
                               {doctor.specializations[0]?.name || 'Специалист'}
                             </div>
-                            <h2 className="tm-doctor-card__title">{getDisplayName(doctor)}</h2>
-                            <p className="tm-muted">
+                            <h2 className="vm-doctor-card__title">{getDisplayName(doctor)}</h2>
+                            <p className="vm-muted">
                               {doctor.visualProfile.experience} · {doctor.visualProfile.qualification}
                             </p>
                           </div>
 
-                          <div className="tm-price-row">
+                          <div className="vm-price-row">
                             <div>
-                              <span className="tm-overline">Прием от</span>
+                              <span className="vm-overline">Прием от</span>
                               <strong>{doctor.visualProfile.price.toLocaleString('ru-RU')} ₽</strong>
                             </div>
-                            <AppLink className="tm-button tm-button--soft" href={buildDoctorProfileHref(doctor.id)}>
+                            <AppLink className="vm-button vm-button--soft" href={buildDoctorProfileHref(doctor.id)}>
                               Записаться
                             </AppLink>
                           </div>
@@ -334,13 +334,13 @@ function DoctorDirectoryWithFiltersPage() {
                   </div>
 
                   {!filteredDoctors.length ? (
-                    <section className="tm-card tm-empty-state" style={{ marginTop: '22px' }}>
+                    <section className="vm-card vm-empty-state" style={{ marginTop: '22px' }}>
                       <h2>Ничего не найдено</h2>
                       <p>Измените фильтры или попробуйте другой поисковый запрос.</p>
                     </section>
                   ) : null}
 
-                  <div className="tm-pagination">
+                  <div className="vm-pagination">
                     <button type="button">‹</button>
                     <button className="is-active" type="button">1</button>
                     <button type="button">2</button>
@@ -353,7 +353,7 @@ function DoctorDirectoryWithFiltersPage() {
           </div>
         </div>
       </section>
-    </TelemedPage>
+    </VirtualMedicPage>
   )
 }
 

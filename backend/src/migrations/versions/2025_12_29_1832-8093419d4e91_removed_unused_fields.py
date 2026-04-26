@@ -1,4 +1,4 @@
-"""initial telemedicine schema
+"""initial virtualmedic schema
 
 Revision ID: 8093419d4e91
 Revises:

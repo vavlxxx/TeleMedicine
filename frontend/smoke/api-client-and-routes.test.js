@@ -176,3 +176,42 @@ test('maintenance state uses dedicated endpoints', async () => {
   assert.equal(requests[1].options.headers.get('Content-Type'), 'application/json')
   assert.deepEqual(JSON.parse(requests[1].options.body), { enabled: true })
 })
+
+test('specialization mutations use admin authenticated endpoints', async () => {
+  const requests = []
+
+  configureApiClient({
+    getAccessToken: () => 'admin-token',
+    refreshAccessToken: null,
+    handleAuthFailure: () => {},
+  })
+
+  globalThis.fetch = async (url, options) => {
+    requests.push({ url, options })
+
+    if (options.method === 'DELETE') {
+      return new Response(null, { status: 204 })
+    }
+
+    return jsonResponse({ id: 11, name: 'Кардиолог' }, { status: options.method === 'POST' ? 201 : 200 })
+  }
+
+  await apiClient.createSpecialization({ name: 'Кардиолог' })
+  await apiClient.updateSpecialization(11, { name: 'Детский кардиолог' })
+  await apiClient.deleteSpecialization(11)
+
+  assert.deepEqual(
+    requests.map((request) => [request.url, request.options.method]),
+    [
+      ['/api/v1/specializations/', 'POST'],
+      ['/api/v1/specializations/11', 'PATCH'],
+      ['/api/v1/specializations/11', 'DELETE'],
+    ],
+  )
+  assert.deepEqual(
+    requests.map((request) => request.options.headers.get('Authorization')),
+    ['Bearer admin-token', 'Bearer admin-token', 'Bearer admin-token'],
+  )
+  assert.deepEqual(JSON.parse(requests[0].options.body), { name: 'Кардиолог' })
+  assert.deepEqual(JSON.parse(requests[1].options.body), { name: 'Детский кардиолог' })
+})

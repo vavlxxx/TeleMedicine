@@ -1,6 +1,6 @@
-# TelemedRU
+# VirtualMedic
 
-TelemedRU — это монорепозиторий, в котором находятся:
+VirtualMedic — это монорепозиторий, в котором находятся:
 
 - `backend/` на FastAPI + SQLAlchemy + Alembic
 - `frontend/` на React + Vite
@@ -249,8 +249,8 @@ npm run build
 ### Docker
 
 ```bash
-docker build -t telemedru-backend ./backend
-docker build -t telemedru-frontend ./frontend
+docker build -t virtualmedic-backend ./backend
+docker build -t virtualmedic-frontend ./frontend
 ```
 
 ## CI/CD в GitHub Actions

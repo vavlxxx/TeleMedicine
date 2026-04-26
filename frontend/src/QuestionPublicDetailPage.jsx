@@ -3,13 +3,13 @@ import { ApiError, apiClient } from './api/client'
 import { AppLink, useRouter } from './router'
 import { routes, withReturnTo } from './routes'
 import { formatDateTime, getDisplayName, getInitials, parsePositiveInteger } from './publicPageUtils'
-import { TelemedPage } from './TelemedLayout'
+import { VirtualMedicPage } from './VirtualMedicLayout'
 import {
   formatRelativeQuestionTime,
   getDoctorVisualProfile,
   getQuestionCategory,
   getQuestionPatientMeta,
-} from './telemedReference'
+} from './virtualmedicReference'
 
 function QuestionPublicDetailPage() {
   const { location } = useRouter()
@@ -64,53 +64,53 @@ function QuestionPublicDetailPage() {
   const patientMeta = question ? getQuestionPatientMeta(question) : null
 
   return (
-    <TelemedPage activeNav="questions" actionLabel="Войти" actionHref={withReturnTo(routes.login, currentPageHref)}>
-      <section className="tm-page-section">
-        <div className="tm-shell">
-          <div className="tm-breadcrumbs">
+    <VirtualMedicPage activeNav="questions" actionLabel="Войти" actionHref={withReturnTo(routes.login, currentPageHref)}>
+      <section className="vm-page-section">
+        <div className="vm-shell">
+          <div className="vm-breadcrumbs">
             <span>Главная</span>
             <span>Вопросы</span>
             <span>Вопрос #{questionId || '...'}</span>
           </div>
 
           {!questionId ? (
-            <section className="tm-card tm-empty-state">
+            <section className="vm-card vm-empty-state">
               <h2>Вопрос не выбран</h2>
               <p>Откройте ленту открытых вопросов и перейдите в конкретное обсуждение.</p>
-              <AppLink className="tm-button" href={routes.questions}>
+              <AppLink className="vm-button" href={routes.questions}>
                 К ленте вопросов
               </AppLink>
             </section>
           ) : null}
 
           {isLoading ? (
-            <section className="tm-card tm-empty-state">
+            <section className="vm-card vm-empty-state">
               <h2>Загружаем обсуждение</h2>
               <p>Получаем вопрос и ответы специалистов из backend.</p>
             </section>
           ) : null}
 
           {!isLoading && errorMessage ? (
-            <section className="tm-card tm-empty-state">
+            <section className="vm-card vm-empty-state">
               <h2>Не удалось открыть вопрос</h2>
               <p>{errorMessage}</p>
-              <AppLink className="tm-button" href={routes.questions}>
+              <AppLink className="vm-button" href={routes.questions}>
                 Вернуться в ленту
               </AppLink>
             </section>
           ) : null}
 
           {question ? (
-            <div className="tm-question-detail-layout">
-              <article className="tm-card tm-question-card">
-                <div className="tm-inline-meta">
-                  <span className="tm-overline">Вопрос пациента</span>
-                  <span className="tm-muted">{formatRelativeQuestionTime(question.created_at)}</span>
+            <div className="vm-question-detail-layout">
+              <article className="vm-card vm-question-card">
+                <div className="vm-inline-meta">
+                  <span className="vm-overline">Вопрос пациента</span>
+                  <span className="vm-muted">{formatRelativeQuestionTime(question.created_at)}</span>
                 </div>
 
-                <h1 className="tm-question-card__title">{question.text}</h1>
+                <h1 className="vm-question-card__title">{question.text}</h1>
 
-                <div className="tm-question-detail-meta">
+                <div className="vm-question-detail-meta">
                   <span>{getDisplayName(question.author)}</span>
                   <span>{patientMeta.age} года</span>
                   <span>{patientMeta.city}</span>
@@ -119,7 +119,7 @@ function QuestionPublicDetailPage() {
 
                 <p>{question.text}</p>
 
-                <div className="tm-card tm-detail-card">
+                <div className="vm-card vm-detail-card">
                   <h2>Прикрепленные материалы</h2>
                   <p>
                     В текущем MVP реальные attachments к вопросам ещё не подключены. Блок оставлен
@@ -128,10 +128,10 @@ function QuestionPublicDetailPage() {
                 </div>
               </article>
 
-              <section className="tm-response-list">
-                <div className="tm-question-card__row">
+              <section className="vm-response-list">
+                <div className="vm-question-card__row">
                   <h2>Ответы специалистов ({question.comments.length})</h2>
-                  <span className="tm-muted">Обновлено {formatDateTime(question.created_at)}</span>
+                  <span className="vm-muted">Обновлено {formatDateTime(question.created_at)}</span>
                 </div>
 
                 {question.comments.length ? (
@@ -139,10 +139,10 @@ function QuestionPublicDetailPage() {
                     const visualProfile = getDoctorVisualProfile(comment.author)
 
                     return (
-                      <article className="tm-card tm-response-card" key={comment.id}>
-                        <div className="tm-response-card__head">
+                      <article className="vm-card vm-response-card" key={comment.id}>
+                        <div className="vm-response-card__head">
                           <div
-                            className="tm-doctor-portrait tm-response-card__avatar"
+                            className="vm-doctor-portrait vm-response-card__avatar"
                             style={{ background: visualProfile.theme.background }}
                             aria-hidden="true"
                           >
@@ -151,30 +151,30 @@ function QuestionPublicDetailPage() {
 
                           <div>
                             <h3>{getDisplayName(comment.author)}</h3>
-                            <div className="tm-inline-meta">
-                              <span className="tm-muted">{category}</span>
-                              <span className="tm-muted">{visualProfile.experience}</span>
-                              <span className="tm-rating-badge">
+                            <div className="vm-inline-meta">
+                              <span className="vm-muted">{category}</span>
+                              <span className="vm-muted">{visualProfile.experience}</span>
+                              <span className="vm-rating-badge">
                                 <span className="material-symbols-outlined">star</span>
                                 {visualProfile.rating}
                               </span>
                             </div>
                           </div>
 
-                          <span className="tm-verified-strip">Доступен онлайн</span>
+                          <span className="vm-verified-strip">Доступен онлайн</span>
                         </div>
 
                         <p>{comment.text}</p>
 
-                        <ul className="tm-recommendations">
+                        <ul className="vm-recommendations">
                           <li>Записать ключевые симптомы и время их появления.</li>
                           <li>Подготовить предыдущие обследования перед консультацией.</li>
                           <li>При ухудшении состояния обратиться за очной помощью.</li>
                         </ul>
 
-                        <div className="tm-response-card__footer">
-                          <span className="tm-muted">Ответ опубликован {formatDateTime(comment.created_at)}</span>
-                          <AppLink className="tm-button tm-button--dark" href={withReturnTo(routes.login, currentPageHref)}>
+                        <div className="vm-response-card__footer">
+                          <span className="vm-muted">Ответ опубликован {formatDateTime(comment.created_at)}</span>
+                          <AppLink className="vm-button vm-button--dark" href={withReturnTo(routes.login, currentPageHref)}>
                             Записаться на консультацию
                           </AppLink>
                         </div>
@@ -182,7 +182,7 @@ function QuestionPublicDetailPage() {
                     )
                   })
                 ) : (
-                  <section className="tm-card tm-empty-state">
+                  <section className="vm-card vm-empty-state">
                     <h2>Ответов пока нет</h2>
                     <p>Вопрос опубликован и ожидает комментариев верифицированных врачей.</p>
                   </section>
@@ -192,7 +192,7 @@ function QuestionPublicDetailPage() {
           ) : null}
         </div>
       </section>
-    </TelemedPage>
+    </VirtualMedicPage>
   )
 }
 

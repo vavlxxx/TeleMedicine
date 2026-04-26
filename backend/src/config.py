@@ -14,8 +14,8 @@ class DbSettings(BaseModel):
     port: int = 5432
     user: str = "postgres"
     password: SecretStr = SecretStr("postgres")
-    name: str = "telemedicine"
-    name_test: str = "telemedicine_test"
+    name: str = "virtualmedic"
+    name_test: str = "virtualmedic_test"
     echo: bool = False
 
     @property
@@ -31,7 +31,7 @@ class DbSettings(BaseModel):
 
 
 class AppSettings(BaseModel):
-    title: str = "TeleMedicine API"
+    title: str = "VirtualMedic API"
     mode: Literal["DEV", "TEST", "PROD"] = "DEV"
     api_prefix: str = "/api"
     v1_prefix: str = "/v1"
@@ -54,8 +54,8 @@ class JwtSettings(BaseModel):
     algorithm: str = "HS256"
     access_ttl_minutes: int = 15
     refresh_ttl_days: int = 30
-    issuer: str = "telemedicine-backend"
-    audience: str = "telemedicine-frontend"
+    issuer: str = "virtualmedic-backend"
+    audience: str = "virtualmedic-frontend"
     refresh_cookie_name: str = "refresh_token"
     refresh_cookie_path: str = "/api/v1/auth"
     cookie_secure: bool = False

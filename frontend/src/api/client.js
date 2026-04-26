@@ -277,6 +277,29 @@ export const apiClient = {
     return request('/specializations/')
   },
 
+  createSpecialization(payload) {
+    return request('/specializations/', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      auth: true,
+    })
+  },
+
+  updateSpecialization(specializationId, payload) {
+    return request(`/specializations/${specializationId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+      auth: true,
+    })
+  },
+
+  deleteSpecialization(specializationId) {
+    return request(`/specializations/${specializationId}`, {
+      method: 'DELETE',
+      auth: true,
+    })
+  },
+
   listDoctors(params = {}) {
     return request(`/doctors/${createQueryString(params)}`)
   },

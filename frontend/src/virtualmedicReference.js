@@ -17,7 +17,7 @@ const experienceLabels = [
 const qualificationLabels = [
   'Врач высшей категории',
   'К.М.Н.',
-  'Специалист телемедицины',
+  'Специалист VirtualMedic',
   'Эксперт платформы',
   'Врач первой категории',
 ]
@@ -25,7 +25,7 @@ const qualificationLabels = [
 const cityLabels = ['Москва', 'Екатеринбург', 'Казань', 'Новосибирск', 'Санкт-Петербург']
 
 export function createSeedNumber(value) {
-  const source = String(value || 'telemed')
+  const source = String(value || 'virtualmedic')
   let hash = 0
 
   for (let index = 0; index < source.length; index += 1) {

@@ -5,7 +5,7 @@ import { useAuth } from './auth/AuthContext'
 import { fetchMockTestimonials } from './mocks/testimonials'
 import { AppLink } from './router'
 import { getDefaultAuthenticatedPath, routes } from './routes'
-import telemedIcon from './assets/telemed-icon.png'
+import virtualmedicIcon from './assets/virtualmedic-icon.png'
 import './App.css'
 
 const navItems = [
@@ -383,12 +383,12 @@ function App() {
             onClick={() => setIsMobileMenuOpen(false)}
           >
             <img
-              alt="TelemedRU"
+              alt="VirtualMedic"
               className="h-9 w-9 rounded-lg object-cover md:h-11 md:w-11 md:rounded-xl"
-              src={telemedIcon}
+              src={virtualmedicIcon}
             />
             <h1 className="text-lg font-bold tracking-tight text-primary sm:text-xl md:text-2xl">
-              Telemed<span className="text-slate-900">RU</span>
+              Virtual<span className="text-slate-900">Medic</span>
             </h1>
           </a>
 
@@ -935,9 +935,9 @@ function App() {
           <div className="flex flex-col gap-6">
             <div>
               <div className="mb-3 flex items-center gap-2">
-                <img alt="TelemedRU" className="h-8 w-8 rounded-lg object-cover" src={telemedIcon} />
+                <img alt="VirtualMedic" className="h-8 w-8 rounded-lg object-cover" src={virtualmedicIcon} />
                 <h2 className="text-lg font-bold tracking-tight text-primary">
-                  TelemedRU
+                  VirtualMedic
                 </h2>
               </div>
               <p className="text-xs leading-relaxed text-slate-500">
@@ -988,9 +988,9 @@ function App() {
 
             <div className="space-y-3 border-t border-slate-100 pt-6 text-[10px] text-slate-400">
               <p>
-                © 2024 TelemedRU. Все права защищены.
+                © 2024 VirtualMedic. Все права защищены.
                 <br />
-                ООО "Телемед Диджитал".
+                ООО "ВиртуалМедик Диджитал".
               </p>
               <div className="flex flex-wrap gap-x-4 gap-y-2">
                 <AppLink className="underline underline-offset-2 hover:text-primary" href={routes.login}>
@@ -1007,9 +1007,9 @@ function App() {
         <div className="js-footer-grid mx-auto mb-14 hidden w-full max-w-7xl grid-cols-1 gap-10 sm:mb-16 md:grid md:grid-cols-2 lg:mb-20 lg:grid-cols-4 lg:gap-12">
           <div className="js-footer-col">
             <div className="mb-8 flex items-center gap-3">
-              <img alt="TelemedRU" className="h-10 w-10 rounded-xl object-cover" src={telemedIcon} />
+              <img alt="VirtualMedic" className="h-10 w-10 rounded-xl object-cover" src={virtualmedicIcon} />
               <h2 className="text-2xl font-bold tracking-tight text-primary">
-                TelemedRU
+                VirtualMedic
               </h2>
             </div>
             <p className="mb-6 leading-relaxed text-slate-500">
@@ -1102,7 +1102,7 @@ function App() {
         </div>
 
         <div className="mx-auto hidden w-full max-w-7xl flex-col items-center justify-between gap-4 border-t border-slate-100 pt-8 text-center text-sm text-slate-400 md:flex lg:flex-row lg:gap-6 lg:text-left">
-          <p>© 2024 TelemedRU. Все права защищены. ООО "Телемед Диджитал".</p>
+          <p>© 2024 VirtualMedic. Все права защищены. ООО "ВиртуалМедик Диджитал".</p>
           <div className="flex flex-wrap justify-center gap-6 sm:gap-8 lg:justify-end">
             <AppLink className="transition-colors hover:text-slate-900" href={routes.login}>
               Вход

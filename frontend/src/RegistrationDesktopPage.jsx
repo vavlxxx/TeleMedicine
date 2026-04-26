@@ -9,7 +9,7 @@ import {
 } from './formSupport'
 import { AppLink, useRouter } from './router'
 import { resolveSafeAppPath, routes, withReturnTo } from './routes'
-import { TelemedAuthFrame } from './TelemedLayout'
+import { VirtualMedicAuthFrame } from './VirtualMedicLayout'
 
 const strongPasswordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,128}$/
 const allowedDoctorDocumentExtensions = new Set(['pdf', 'png', 'jpg', 'jpeg', 'webp'])
@@ -164,17 +164,17 @@ function RegistrationDesktopPage() {
   }
 
   return (
-    <TelemedAuthFrame
+    <VirtualMedicAuthFrame
       title="Регистрация"
       subtitle="Выберите роль и создайте аккаунт. Для врача регистрация сразу включает заявку на подтверждение документов."
     >
-      <div className="tm-auth-form">
-        {formError ? <div className="tm-auth-message is-error">{formError}</div> : null}
-        {specializationsError ? <div className="tm-auth-message is-error">{specializationsError}</div> : null}
+      <div className="vm-auth-form">
+        {formError ? <div className="vm-auth-message is-error">{formError}</div> : null}
+        {specializationsError ? <div className="vm-auth-message is-error">{specializationsError}</div> : null}
 
-        <div className="tm-segmented" role="tablist" aria-label="Выбор роли при регистрации">
+        <div className="vm-segmented" role="tablist" aria-label="Выбор роли при регистрации">
           <button
-            className={`tm-segmented__item ${role === 'patient' ? 'is-active' : ''}`}
+            className={`vm-segmented__item ${role === 'patient' ? 'is-active' : ''}`}
             type="button"
             onClick={() => setRole('patient')}
           >
@@ -182,7 +182,7 @@ function RegistrationDesktopPage() {
             <span>Быстрая регистрация для вопросов, консультаций и личного кабинета.</span>
           </button>
           <button
-            className={`tm-segmented__item ${role === 'doctor' ? 'is-active' : ''}`}
+            className={`vm-segmented__item ${role === 'doctor' ? 'is-active' : ''}`}
             type="button"
             onClick={() => setRole('doctor')}
           >
@@ -191,11 +191,11 @@ function RegistrationDesktopPage() {
           </button>
         </div>
 
-        <form className="tm-auth-form" onSubmit={handleSubmit} noValidate>
-          <label className="tm-auth-field">
-            <span className="tm-auth-field__label">Имя</span>
+        <form className="vm-auth-form" onSubmit={handleSubmit} noValidate>
+          <label className="vm-auth-field">
+            <span className="vm-auth-field__label">Имя</span>
             <input
-              className="tm-input"
+              className="vm-input"
               type="text"
               value={values.first_name}
               onChange={(event) => {
@@ -203,13 +203,13 @@ function RegistrationDesktopPage() {
                 setErrors((current) => ({ ...current, first_name: '' }))
               }}
             />
-            {errors.first_name ? <span className="tm-form-error">{errors.first_name}</span> : null}
+            {errors.first_name ? <span className="vm-form-error">{errors.first_name}</span> : null}
           </label>
 
-          <label className="tm-auth-field">
-            <span className="tm-auth-field__label">Фамилия</span>
+          <label className="vm-auth-field">
+            <span className="vm-auth-field__label">Фамилия</span>
             <input
-              className="tm-input"
+              className="vm-input"
               type="text"
               value={values.last_name}
               onChange={(event) => {
@@ -217,13 +217,13 @@ function RegistrationDesktopPage() {
                 setErrors((current) => ({ ...current, last_name: '' }))
               }}
             />
-            {errors.last_name ? <span className="tm-form-error">{errors.last_name}</span> : null}
+            {errors.last_name ? <span className="vm-form-error">{errors.last_name}</span> : null}
           </label>
 
-          <label className="tm-auth-field">
-            <span className="tm-auth-field__label">Имя пользователя</span>
+          <label className="vm-auth-field">
+            <span className="vm-auth-field__label">Имя пользователя</span>
             <input
-              className="tm-input"
+              className="vm-input"
               type="text"
               value={values.username}
               onChange={(event) => {
@@ -231,14 +231,14 @@ function RegistrationDesktopPage() {
                 setErrors((current) => ({ ...current, username: '' }))
               }}
             />
-            {errors.username ? <span className="tm-form-error">{errors.username}</span> : null}
+            {errors.username ? <span className="vm-form-error">{errors.username}</span> : null}
           </label>
 
-          <label className="tm-auth-field">
-            <span className="tm-auth-field__label">Пароль</span>
-            <div className="tm-auth-field__control">
+          <label className="vm-auth-field">
+            <span className="vm-auth-field__label">Пароль</span>
+            <div className="vm-auth-field__control">
               <input
-                className="tm-input"
+                className="vm-input"
                 type={isPasswordVisible ? 'text' : 'password'}
                 value={values.password}
                 onChange={(event) => {
@@ -247,7 +247,7 @@ function RegistrationDesktopPage() {
                 }}
               />
               <button
-                className="tm-auth-field__icon"
+                className="vm-auth-field__icon"
                 type="button"
                 onClick={() => setIsPasswordVisible((current) => !current)}
                 aria-label={isPasswordVisible ? 'Скрыть пароль' : 'Показать пароль'}
@@ -257,14 +257,14 @@ function RegistrationDesktopPage() {
                 </span>
               </button>
             </div>
-            {errors.password ? <span className="tm-form-error">{errors.password}</span> : null}
+            {errors.password ? <span className="vm-form-error">{errors.password}</span> : null}
           </label>
 
-          <label className="tm-auth-field">
-            <span className="tm-auth-field__label">Подтверждение пароля</span>
-            <div className="tm-auth-field__control">
+          <label className="vm-auth-field">
+            <span className="vm-auth-field__label">Подтверждение пароля</span>
+            <div className="vm-auth-field__control">
               <input
-                className="tm-input"
+                className="vm-input"
                 type={isConfirmPasswordVisible ? 'text' : 'password'}
                 value={values.confirmPassword}
                 onChange={(event) => {
@@ -273,7 +273,7 @@ function RegistrationDesktopPage() {
                 }}
               />
               <button
-                className="tm-auth-field__icon"
+                className="vm-auth-field__icon"
                 type="button"
                 onClick={() => setIsConfirmPasswordVisible((current) => !current)}
                 aria-label={isConfirmPasswordVisible ? 'Скрыть пароль' : 'Показать пароль'}
@@ -283,15 +283,15 @@ function RegistrationDesktopPage() {
                 </span>
               </button>
             </div>
-            {errors.confirmPassword ? <span className="tm-form-error">{errors.confirmPassword}</span> : null}
+            {errors.confirmPassword ? <span className="vm-form-error">{errors.confirmPassword}</span> : null}
           </label>
 
           {role === 'doctor' ? (
             <>
-              <label className="tm-auth-field">
-                <span className="tm-auth-field__label">Специализации</span>
+              <label className="vm-auth-field">
+                <span className="vm-auth-field__label">Специализации</span>
                 <select
-                  className="tm-select"
+                  className="vm-select"
                   multiple
                   value={values.specialization_ids.map(String)}
                   onChange={(event) => {
@@ -307,13 +307,13 @@ function RegistrationDesktopPage() {
                     </option>
                   ))}
                 </select>
-                {errors.specialization_ids ? <span className="tm-form-error">{errors.specialization_ids}</span> : null}
+                {errors.specialization_ids ? <span className="vm-form-error">{errors.specialization_ids}</span> : null}
               </label>
 
-              <label className="tm-auth-field">
-                <span className="tm-auth-field__label">Документы врача</span>
+              <label className="vm-auth-field">
+                <span className="vm-auth-field__label">Документы врача</span>
                 <input
-                  className="tm-input"
+                  className="vm-input"
                   type="file"
                   multiple
                   accept=".pdf,.png,.jpg,.jpeg,.webp"
@@ -325,25 +325,25 @@ function RegistrationDesktopPage() {
                   style={{ padding: '12px 14px', height: 'auto' }}
                 />
                 {values.documents.length ? (
-                  <div className="tm-file-list">
+                  <div className="vm-file-list">
                     {values.documents.map((file) => (
-                      <span className="tm-file-chip" key={`${file.name}-${file.size}`}>
+                      <span className="vm-file-chip" key={`${file.name}-${file.size}`}>
                         {file.name}
                       </span>
                     ))}
                   </div>
                 ) : null}
-                {errors.documents ? <span className="tm-form-error">{errors.documents}</span> : null}
+                {errors.documents ? <span className="vm-form-error">{errors.documents}</span> : null}
               </label>
             </>
           ) : null}
 
-          <label className="tm-checkbox">
+          <label className="vm-checkbox">
             <input type="checkbox" />
             Я соглашаюсь с условиями использования и политикой конфиденциальности
           </label>
 
-          <button className="tm-button" type="submit" disabled={isSubmitting}>
+          <button className="vm-button" type="submit" disabled={isSubmitting}>
             {isSubmitting
               ? role === 'doctor'
                 ? 'Отправляем заявку...'
@@ -354,14 +354,14 @@ function RegistrationDesktopPage() {
           </button>
         </form>
 
-        <div className="tm-auth-footer">
+        <div className="vm-auth-footer">
           Уже есть аккаунт?{' '}
-          <AppLink className="tm-link" href={withReturnTo(routes.login, searchParams.get('returnTo'))}>
+          <AppLink className="vm-link" href={withReturnTo(routes.login, searchParams.get('returnTo'))}>
             Войти
           </AppLink>
         </div>
       </div>
-    </TelemedAuthFrame>
+    </VirtualMedicAuthFrame>
   )
 }
 
