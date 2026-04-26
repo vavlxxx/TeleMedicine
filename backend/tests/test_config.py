@@ -17,7 +17,7 @@ def make_prod_settings(**overrides) -> Settings:
             cookie_secure=True,
         ),
         "cors": CorsSettings(
-            allowed_origins=["https://app.telemed.example"],
+            allowed_origins=["https://app.virtualmedic.example"],
         ),
     }
     payload.update(overrides)
@@ -28,7 +28,7 @@ def test_prod_settings_accept_secure_configuration() -> None:
     settings = make_prod_settings()
     assert settings.app.mode == "PROD"
     assert settings.auth.cookie_secure is True
-    assert settings.cors.allowed_origins == ["https://app.telemed.example"]
+    assert settings.cors.allowed_origins == ["https://app.virtualmedic.example"]
 
 
 @pytest.mark.parametrize(

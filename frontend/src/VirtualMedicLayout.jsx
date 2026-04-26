@@ -1,19 +1,19 @@
 import { AppLink } from './router'
 import { routes } from './routes'
-import telemedIcon from './assets/telemed-icon.png'
+import virtualmedicIcon from './assets/virtualmedic-icon.png'
 
-function TelemedLogo() {
+function VirtualMedicLogo() {
   return (
-    <span className="tm-logo">
-      <img alt="TelemedRU" className="tm-logo__icon" src={telemedIcon} />
-      <span className="tm-logo__text">TelemedRU</span>
+    <span className="vm-logo">
+      <img alt="VirtualMedic" className="vm-logo__icon" src={virtualmedicIcon} />
+      <span className="vm-logo__text">VirtualMedic</span>
     </span>
   )
 }
 
 function SearchField({ placeholder = 'Поиск врача или услуги', value = '', onChange = null }) {
   return (
-    <label className="tm-search">
+    <label className="vm-search">
       <span className="material-symbols-outlined">search</span>
       {onChange ? (
         <input
@@ -29,7 +29,7 @@ function SearchField({ placeholder = 'Поиск врача или услуги'
   )
 }
 
-export function TelemedHeader({
+export function VirtualMedicHeader({
   active = 'doctors',
   actionLabel = 'Войти',
   actionHref = routes.login,
@@ -43,18 +43,18 @@ export function TelemedHeader({
   ]
 
   return (
-    <header className="tm-header">
-      <div className="tm-shell tm-header__inner">
-        <AppLink href={routes.landing} className="tm-header__brand">
-          <TelemedLogo />
+    <header className="vm-header">
+      <div className="vm-shell vm-header__inner">
+        <AppLink href={routes.landing} className="vm-header__brand">
+          <VirtualMedicLogo />
         </AppLink>
 
-        <nav className="tm-header__nav" aria-label="Основная навигация">
+        <nav className="vm-header__nav" aria-label="Основная навигация">
           {navItems.map((item) => (
             <AppLink
               key={item.key}
               href={item.href}
-              className={`tm-header__link ${active === item.key ? 'is-active' : ''}`}
+              className={`vm-header__link ${active === item.key ? 'is-active' : ''}`}
             >
               {item.label}
             </AppLink>
@@ -67,11 +67,11 @@ export function TelemedHeader({
           onChange={onSearchChange}
         />
 
-        <div className="tm-header__actions">
-          <AppLink href={actionHref} className="tm-button tm-button--dark">
+        <div className="vm-header__actions">
+          <AppLink href={actionHref} className="vm-button vm-button--dark">
             {actionLabel}
           </AppLink>
-          <span className="tm-header__avatar" aria-hidden="true">
+          <span className="vm-header__avatar" aria-hidden="true">
             <span className="material-symbols-outlined">person</span>
           </span>
         </div>
@@ -80,36 +80,36 @@ export function TelemedHeader({
   )
 }
 
-export function TelemedFooter() {
+export function VirtualMedicFooter() {
   return (
-    <footer className="tm-footer">
-      <div className="tm-shell tm-footer__inner">
-        <div className="tm-footer__brand">
-          <TelemedLogo />
+    <footer className="vm-footer">
+      <div className="vm-shell vm-footer__inner">
+        <div className="vm-footer__brand">
+          <VirtualMedicLogo />
           <p>
             Профессиональные медицинские консультации онлайн. Помогаем быстро получить второе
             мнение и выбрать врача.
           </p>
         </div>
 
-        <div className="tm-footer__column">
+        <div className="vm-footer__column">
           <h3>Пациентам</h3>
           <AppLink href={routes.doctors}>Каталог врачей</AppLink>
           <AppLink href={routes.questions}>Открытые вопросы</AppLink>
           <AppLink href={routes.login}>Вход</AppLink>
         </div>
 
-        <div className="tm-footer__column">
+        <div className="vm-footer__column">
           <h3>Платформа</h3>
           <AppLink href={routes.landing}>Главная</AppLink>
           <AppLink href={routes.register}>Регистрация</AppLink>
           <AppLink href={routes.admin}>Админ панель</AppLink>
         </div>
 
-        <div className="tm-footer__column">
+        <div className="vm-footer__column">
           <h3>Поддержка</h3>
           <a href="tel:88005553535">8 (800) 555-35-35</a>
-          <a href="mailto:help@telemed.ru">help@telemed.ru</a>
+          <a href="mailto:help@virtualmedic.ru">help@virtualmedic.ru</a>
           <span>Ежедневно 08:00-22:00</span>
         </div>
       </div>
@@ -117,7 +117,7 @@ export function TelemedFooter() {
   )
 }
 
-export function TelemedPage({
+export function VirtualMedicPage({
   activeNav,
   actionLabel,
   actionHref,
@@ -127,8 +127,8 @@ export function TelemedPage({
   onSearchChange,
 }) {
   return (
-    <div className="tm-page">
-      <TelemedHeader
+    <div className="vm-page">
+      <VirtualMedicHeader
         active={activeNav}
         actionLabel={actionLabel}
         actionHref={actionHref}
@@ -136,30 +136,30 @@ export function TelemedPage({
         searchValue={searchValue}
         onSearchChange={onSearchChange}
       />
-      <main className="tm-main">{children}</main>
-      <TelemedFooter />
+      <main className="vm-main">{children}</main>
+      <VirtualMedicFooter />
     </div>
   )
 }
 
-export function TelemedAuthFrame({ children, subtitle, title }) {
+export function VirtualMedicAuthFrame({ children, subtitle, title }) {
   return (
-    <main className="tm-auth">
-      <div className="tm-auth__topbar">
-        <div className="tm-auth__topbar-inner">
-          <AppLink href={routes.landing} className="tm-auth__brand">
-            <TelemedLogo />
+    <main className="vm-auth">
+      <div className="vm-auth__topbar">
+        <div className="vm-auth__topbar-inner">
+          <AppLink href={routes.landing} className="vm-auth__brand">
+            <VirtualMedicLogo />
           </AppLink>
-          <span className="tm-auth__support">Помощь</span>
+          <span className="vm-auth__support">Помощь</span>
         </div>
       </div>
 
-      <div className="tm-auth__body">
-        <section className="tm-auth__card">
-          <div className="tm-auth__card-brand">
-            <TelemedLogo />
+      <div className="vm-auth__body">
+        <section className="vm-auth__card">
+          <div className="vm-auth__card-brand">
+            <VirtualMedicLogo />
           </div>
-          <header className="tm-auth__header">
+          <header className="vm-auth__header">
             <h1>{title}</h1>
             <p>{subtitle}</p>
           </header>

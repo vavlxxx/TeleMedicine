@@ -5,12 +5,12 @@ import { resolveFormApiError, useSubmitLock } from './formSupport'
 import { AppLink } from './router'
 import { routes, withReturnTo } from './routes'
 import { buildQuestionHref, getInitials, trimMultilineText } from './publicPageUtils'
-import { TelemedPage } from './TelemedLayout'
+import { VirtualMedicPage } from './VirtualMedicLayout'
 import {
   formatRelativeQuestionTime,
   getQuestionCategory,
   summarizeQuestion,
-} from './telemedReference'
+} from './virtualmedicReference'
 
 const QUESTIONS_PAGE_SIZE = 12
 
@@ -192,7 +192,7 @@ function PublicQuestionsFeedPage() {
   }
 
   return (
-    <TelemedPage
+    <VirtualMedicPage
       activeNav="questions"
       actionLabel={auth.isAuthenticated ? 'Личный кабинет' : 'Войти'}
       actionHref={auth.isAuthenticated ? routes.account : withReturnTo(routes.login, currentPageHref)}
@@ -200,20 +200,20 @@ function PublicQuestionsFeedPage() {
       searchValue={searchQuery}
       onSearchChange={(event) => setSearchQuery(event.target.value)}
     >
-      <section className="tm-page-section">
-        <div className="tm-shell">
-          <div className="tm-page-hero">
+      <section className="vm-page-section">
+        <div className="vm-shell">
+          <div className="vm-page-hero">
             <div>
               <h1>Лента открытых вопросов</h1>
               <p>Задайте вопрос и получите ответы от квалифицированных специалистов платформы.</p>
             </div>
           </div>
 
-          <div className="tm-chip-row">
+          <div className="vm-chip-row">
             {categoryOrder.map((category) => (
               <button
                 key={category}
-                className={`tm-chip ${selectedCategory === category ? 'is-active' : ''}`}
+                className={`vm-chip ${selectedCategory === category ? 'is-active' : ''}`}
                 type="button"
                 onClick={() => setSelectedCategory(category)}
               >
@@ -222,26 +222,26 @@ function PublicQuestionsFeedPage() {
             ))}
           </div>
 
-          <section className="tm-card tm-compose-card tm-question-card">
-            <div className="tm-question-card__row">
+          <section className="vm-card vm-compose-card vm-question-card">
+            <div className="vm-question-card__row">
               <div>
-                <div className="tm-overline">Новый вопрос</div>
+                <div className="vm-overline">Новый вопрос</div>
                 <h2>Спросить врача</h2>
               </div>
 
               {!auth.isAuthenticated ? (
-                <AppLink className="tm-button tm-button--soft" href={withReturnTo(routes.login, currentPageHref)}>
+                <AppLink className="vm-button vm-button--soft" href={withReturnTo(routes.login, currentPageHref)}>
                   Войти для публикации
                 </AppLink>
               ) : null}
             </div>
 
-            {questionDraftMessage ? <div className="tm-auth-message is-success">{questionDraftMessage}</div> : null}
-            {questionDraftError ? <div className="tm-auth-message is-error">{questionDraftError}</div> : null}
+            {questionDraftMessage ? <div className="vm-auth-message is-success">{questionDraftMessage}</div> : null}
+            {questionDraftError ? <div className="vm-auth-message is-error">{questionDraftError}</div> : null}
 
-            <form onSubmit={handleQuestionSubmit} className="tm-grid">
+            <form onSubmit={handleQuestionSubmit} className="vm-grid">
               <textarea
-                className="tm-textarea"
+                className="vm-textarea"
                 placeholder="Опишите симптомы, сроки и что уже предпринимали"
                 value={questionDraft}
                 onChange={(event) => {
@@ -250,9 +250,9 @@ function PublicQuestionsFeedPage() {
                 }}
                 disabled={isQuestionSubmitting}
               />
-              <div className="tm-question-card__footer">
-                <span className="tm-helper">Вопрос станет виден в публичной ленте сразу после отправки.</span>
-                <button className="tm-button" type="submit" disabled={isQuestionSubmitting}>
+              <div className="vm-question-card__footer">
+                <span className="vm-helper">Вопрос станет виден в публичной ленте сразу после отправки.</span>
+                <button className="vm-button" type="submit" disabled={isQuestionSubmitting}>
                   {isQuestionSubmitting ? 'Публикуем...' : 'Задать вопрос'}
                 </button>
               </div>
@@ -260,78 +260,78 @@ function PublicQuestionsFeedPage() {
           </section>
 
           {isLoading ? (
-            <section className="tm-card tm-empty-state">
+            <section className="vm-card vm-empty-state">
               <h2>Загружаем вопросы</h2>
               <p>Получаем актуальную открытую ленту вопросов.</p>
             </section>
           ) : null}
 
           {!isLoading && errorMessage ? (
-            <section className="tm-card tm-empty-state">
+            <section className="vm-card vm-empty-state">
               <h2>Лента не загрузилась</h2>
               <p>{errorMessage}</p>
             </section>
           ) : null}
 
           {!isLoading && !errorMessage ? (
-            <div className="tm-question-list">
+            <div className="vm-question-list">
               {filteredQuestions.map((question) => {
                 const category = getQuestionCategory(question)
                 const hasAnswers = question.comments.length > 0
 
                 return (
-                  <article className="tm-card tm-question-card" key={question.id}>
-                    <div className="tm-question-card__row">
-                      <div className="tm-inline-meta">
-                        <span className="tm-overline">{category}</span>
-                        <span className="tm-muted">{formatRelativeQuestionTime(question.created_at)}</span>
+                  <article className="vm-card vm-question-card" key={question.id}>
+                    <div className="vm-question-card__row">
+                      <div className="vm-inline-meta">
+                        <span className="vm-overline">{category}</span>
+                        <span className="vm-muted">{formatRelativeQuestionTime(question.created_at)}</span>
                       </div>
-                      <span className={`tm-question-status ${hasAnswers ? 'is-success' : 'is-pending'}`}>
+                      <span className={`vm-question-status ${hasAnswers ? 'is-success' : 'is-pending'}`}>
                         <span className="material-symbols-outlined">chat</span>
                         {hasAnswers ? `${question.comments.length} ответа` : 'Ожидает'}
                       </span>
                     </div>
 
                     <div>
-                      <h2 className="tm-question-card__title">{summarizeQuestion(question.text, 72)}</h2>
-                      <p className="tm-question-card__summary">{summarizeQuestion(question.text, 180)}</p>
+                      <h2 className="vm-question-card__title">{summarizeQuestion(question.text, 72)}</h2>
+                      <p className="vm-question-card__summary">{summarizeQuestion(question.text, 180)}</p>
                     </div>
 
-                    <div className="tm-question-card__footer">
-                      <div className="tm-inline-meta">
-                        <div className="tm-avatar-stack" aria-hidden="true">
+                    <div className="vm-question-card__footer">
+                      <div className="vm-inline-meta">
+                        <div className="vm-avatar-stack" aria-hidden="true">
                           {(question.comments.length ? question.comments : [question.author]).slice(0, 3).map((item) => (
                             <span key={item.id || item.username}>{getInitials(item.author || item)}</span>
                           ))}
                         </div>
-                        <span className="tm-muted">
+                        <span className="vm-muted">
                           {hasAnswers ? 'Врачи консультируют' : 'Специалисты изучают вопрос'}
                         </span>
                       </div>
 
-                      <AppLink className="tm-button tm-button--ghost" href={buildQuestionHref(question.id)}>
+                      <AppLink className="vm-button vm-button--ghost" href={buildQuestionHref(question.id)}>
                         {hasAnswers ? 'Читать подробнее' : 'Перейти к вопросу'}
                       </AppLink>
                     </div>
 
                     {auth.isReady && auth.hasRole('doctor') ? (
-                      <form className="tm-grid" onSubmit={handleReplySubmit(question.id)}>
+                      <form className="vm-grid" onSubmit={handleReplySubmit(question.id)}>
                         {replyMessages[question.id] ? (
-                          <div className="tm-auth-message is-success">{replyMessages[question.id]}</div>
+                          <div className="vm-auth-message is-success">{replyMessages[question.id]}</div>
                         ) : null}
                         {replyErrors[question.id] ? (
-                          <div className="tm-auth-message is-error">{replyErrors[question.id]}</div>
+                          <div className="vm-auth-message is-error">{replyErrors[question.id]}</div>
                         ) : null}
                         <textarea
-                          className="tm-textarea"
+                          className="vm-textarea"
                           placeholder="Ответить как врач"
                           value={replyDrafts[question.id] || ''}
                           onChange={(event) => setReplyDrafts((current) => ({ ...current, [question.id]: event.target.value }))}
                           disabled={replySubmittingId === question.id}
                         />
-                        <div className="tm-question-card__footer">
-                          <span className="tm-helper">Ответ доступен только верифицированным врачам.</span>
-                          <button className="tm-button" type="submit" disabled={replySubmittingId === question.id}>
+                        <div className="vm-question-card__footer">
+                          <span className="vm-helper">Ответ доступен только верифицированным врачам.</span>
+                          <button className="vm-button" type="submit" disabled={replySubmittingId === question.id}>
                             {replySubmittingId === question.id ? 'Отправляем...' : 'Ответить'}
                           </button>
                         </div>
@@ -342,7 +342,7 @@ function PublicQuestionsFeedPage() {
               })}
 
               {!filteredQuestions.length ? (
-                <section className="tm-card tm-empty-state">
+                <section className="vm-card vm-empty-state">
                   <h2>Подходящих вопросов не найдено</h2>
                   <p>Смените направление или попробуйте другой поисковый запрос.</p>
                 </section>
@@ -351,7 +351,7 @@ function PublicQuestionsFeedPage() {
           ) : null}
         </div>
       </section>
-    </TelemedPage>
+    </VirtualMedicPage>
   )
 }
 

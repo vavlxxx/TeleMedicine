@@ -1,4 +1,4 @@
-name: TeleMedicine CI/CD
+name: VirtualMedic CI/CD
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: telemedicine-${{ github.workflow }}-${{ github.ref }}
+  group: virtualmedic-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -94,10 +94,10 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build backend image
-        run: docker build --tag telemedicine-backend:ci ./backend
+        run: docker build --tag virtualmedic-backend:ci ./backend
 
       - name: Build frontend image
-        run: docker build --tag telemedicine-frontend:ci ./frontend
+        run: docker build --tag virtualmedic-frontend:ci ./frontend
 
   deploy:
     name: Deploy to Ubuntu server

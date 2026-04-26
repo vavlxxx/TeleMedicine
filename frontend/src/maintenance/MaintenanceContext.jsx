@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import telemedIcon from '../assets/telemed-icon.png'
+import virtualmedicIcon from '../assets/virtualmedic-icon.png'
 import { apiClient, ApiError } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { AppLink, useRouter } from '../router'
@@ -34,9 +34,9 @@ function MaintenanceScreen({ updatedAt }) {
       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl items-center justify-center">
         <section className="w-full max-w-5xl rounded-[2rem] bg-white px-6 py-10 text-center shadow-[0_30px_80px_rgba(15,23,42,0.08)] sm:px-10 sm:py-14 md:rounded-[3rem] md:px-16 md:py-18">
           <div className="mb-8 flex items-center justify-center gap-3">
-            <img alt="TelemedRU" className="h-12 w-12 rounded-2xl object-cover shadow-sm" src={telemedIcon} />
+            <img alt="VirtualMedic" className="h-12 w-12 rounded-2xl object-cover shadow-sm" src={virtualmedicIcon} />
             <span className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-              TelemedRU
+              VirtualMedic
             </span>
           </div>
 

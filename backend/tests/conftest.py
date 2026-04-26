@@ -11,7 +11,7 @@ from src.api.v1.dependencies.db import get_db
 from src.main import app
 from src.models.base import Base
 
-TEST_DB_PATH = Path("./test_telemedicine.db")
+TEST_DB_PATH = Path("./test_virtualmedic.db")
 TEST_DB_URL = f"sqlite+aiosqlite:///{TEST_DB_PATH.as_posix()}"
 
 engine = create_async_engine(TEST_DB_URL, future=True)

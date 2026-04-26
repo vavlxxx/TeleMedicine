@@ -1,8 +1,8 @@
 [project]
-name = "telemedicine-backend"
+name = "virtualmedic-backend"
 version = "0.1.0"
-description = "Secure FastAPI backend for TeleMedicine"
-authors = [{ name = "TeleMedicine Team" }]
+description = "Secure FastAPI backend for VirtualMedic"
+authors = [{ name = "VirtualMedic Team" }]
 readme = "README.md"
 requires-python = ">=3.11,<4.0"
 dependencies = [

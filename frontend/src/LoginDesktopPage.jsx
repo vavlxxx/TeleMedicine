@@ -3,7 +3,7 @@ import { useAuth } from './auth/AuthContext'
 import { normalizeUsernameValue, resolveFormApiError, useSubmitLock } from './formSupport'
 import { AppLink, useRouter } from './router'
 import { getDefaultAuthenticatedPath, resolveSafeAppPath, routes, withReturnTo } from './routes'
-import { TelemedAuthFrame } from './TelemedLayout'
+import { VirtualMedicAuthFrame } from './VirtualMedicLayout'
 
 function validateLoginForm(values) {
   const errors = {}
@@ -75,19 +75,19 @@ function LoginDesktopPage() {
   }
 
   return (
-    <TelemedAuthFrame
+    <VirtualMedicAuthFrame
       title="Вход в систему"
       subtitle="Введите данные для доступа к платформе. В текущем MVP вход выполняется по username и паролю."
     >
-      <div className="tm-auth-form">
-        {successMessage ? <div className="tm-auth-message is-success">{successMessage}</div> : null}
-        {formError ? <div className="tm-auth-message is-error">{formError}</div> : null}
+      <div className="vm-auth-form">
+        {successMessage ? <div className="vm-auth-message is-success">{successMessage}</div> : null}
+        {formError ? <div className="vm-auth-message is-error">{formError}</div> : null}
 
-        <form className="tm-auth-form" onSubmit={handleSubmit} noValidate>
-          <label className="tm-auth-field">
-            <span className="tm-auth-field__label">Имя пользователя</span>
+        <form className="vm-auth-form" onSubmit={handleSubmit} noValidate>
+          <label className="vm-auth-field">
+            <span className="vm-auth-field__label">Имя пользователя</span>
             <input
-              className="tm-input"
+              className="vm-input"
               type="text"
               placeholder="patient_001"
               autoComplete="username"
@@ -98,19 +98,19 @@ function LoginDesktopPage() {
               }}
               disabled={isSubmitting}
             />
-            {errors.username ? <span className="tm-form-error">{errors.username}</span> : null}
+            {errors.username ? <span className="vm-form-error">{errors.username}</span> : null}
           </label>
 
-          <label className="tm-auth-field">
-            <span className="tm-auth-field__label-row">
-              <span className="tm-auth-field__label">Пароль</span>
-              <a className="tm-auth-field__hint-link" href={routes.login}>
+          <label className="vm-auth-field">
+            <span className="vm-auth-field__label-row">
+              <span className="vm-auth-field__label">Пароль</span>
+              <a className="vm-auth-field__hint-link" href={routes.login}>
                 Забыли пароль?
               </a>
             </span>
-            <div className="tm-auth-field__control">
+            <div className="vm-auth-field__control">
               <input
-                className="tm-input"
+                className="vm-input"
                 type={isPasswordVisible ? 'text' : 'password'}
                 placeholder="••••••••"
                 autoComplete="current-password"
@@ -122,7 +122,7 @@ function LoginDesktopPage() {
                 disabled={isSubmitting}
               />
               <button
-                className="tm-auth-field__icon"
+                className="vm-auth-field__icon"
                 type="button"
                 aria-label={isPasswordVisible ? 'Скрыть пароль' : 'Показать пароль'}
                 onClick={() => setIsPasswordVisible((current) => !current)}
@@ -132,27 +132,27 @@ function LoginDesktopPage() {
                 </span>
               </button>
             </div>
-            {errors.password ? <span className="tm-form-error">{errors.password}</span> : null}
+            {errors.password ? <span className="vm-form-error">{errors.password}</span> : null}
           </label>
 
-          <label className="tm-checkbox">
+          <label className="vm-checkbox">
             <input type="checkbox" />
             Запомнить меня
           </label>
 
-          <button className="tm-button" type="submit" disabled={isSubmitting}>
+          <button className="vm-button" type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Входим...' : 'Войти'}
           </button>
         </form>
 
-        <div className="tm-auth-footer">
+        <div className="vm-auth-footer">
           Нет аккаунта?{' '}
-          <AppLink className="tm-link" href={withReturnTo(routes.register, searchParams.get('returnTo'))}>
+          <AppLink className="vm-link" href={withReturnTo(routes.register, searchParams.get('returnTo'))}>
             Создать аккаунт
           </AppLink>
         </div>
       </div>
-    </TelemedAuthFrame>
+    </VirtualMedicAuthFrame>
   )
 }
 
