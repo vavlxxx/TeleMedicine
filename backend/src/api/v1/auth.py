@@ -79,6 +79,12 @@ async def logout(db: DBDep, request: Request) -> Response:
     return response
 
 
+@router.post("/presence", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
+async def touch_presence(db: DBDep, request: Request, refresh_context: RefreshContextDep) -> Response:
+    await AuthService(db).touch_presence(refresh_context=refresh_context, request=request)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 @router.get("/me", response_model=UserProfileDTO)
 async def get_my_profile(db: DBDep, current_user: CurrentUserDep) -> UserProfileDTO:
     return await AuthService(db).get_my_profile(current_user)

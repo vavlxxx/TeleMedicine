@@ -58,6 +58,7 @@ class JwtSettings(BaseModel):
     audience: str = "virtualmedic-frontend"
     refresh_cookie_name: str = "refresh_token"
     refresh_cookie_path: str = "/api/v1/auth"
+    online_status_ttl_seconds: int = 90
     cookie_secure: bool = False
     cookie_samesite: Literal["lax", "strict", "none"] = "lax"
     cookie_domain: str | None = None

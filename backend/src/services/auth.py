@@ -221,6 +221,11 @@ class AuthService(BaseService):
         refresh_session.revoked_at = utc_now()
         await self.db.commit()
 
+    async def touch_presence(self, refresh_context: RefreshAuthContext, request: Request) -> None:
+        refresh_context.refresh_session.updated_at = utc_now()
+        refresh_context.refresh_session.ip_address = get_client_ip(request)
+        await self.db.commit()
+
     async def get_my_profile(self, current_user: User) -> UserProfileDTO:
         return to_user_profile(current_user)
 

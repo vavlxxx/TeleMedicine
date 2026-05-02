@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { apiClient, configureApiClient } from '../api/client'
 
 const AuthContext = createContext(null)
+const PRESENCE_HEARTBEAT_INTERVAL_MS = 30_000
 
 const anonymousState = {
   isReady: false,
@@ -67,6 +68,43 @@ export function AuthProvider({ children }) {
 
     initializeSession()
   }, [applyAuthenticatedUser])
+
+  useEffect(() => {
+    if (!authState.isReady || !authState.accessToken || !authState.user) {
+      return undefined
+    }
+
+    let isCancelled = false
+
+    const sendPresence = async () => {
+      try {
+        await apiClient.sendPresence()
+      } catch {
+        if (isCancelled) {
+          return
+        }
+      }
+    }
+
+    sendPresence()
+    const intervalId = window.setInterval(() => {
+      sendPresence()
+    }, PRESENCE_HEARTBEAT_INTERVAL_MS)
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        sendPresence()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      isCancelled = true
+      window.clearInterval(intervalId)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [authState.accessToken, authState.isReady, authState.user])
 
   const login = useCallback(async (payload) => {
     const response = await apiClient.login(payload)

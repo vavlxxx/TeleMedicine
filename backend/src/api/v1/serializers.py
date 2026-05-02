@@ -1,5 +1,6 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
+from src.config import settings
 from src.models.auth import User
 from src.models.doctor import DoctorQualificationDocument, Specialization
 from src.models.qa import Question, QuestionComment
@@ -42,10 +43,15 @@ def to_document_dto(document: DoctorQualificationDocument) -> DoctorQualificatio
 
 def _has_active_refresh_session(user: User) -> bool:
     now = datetime.now(UTC)
+    online_cutoff = now - timedelta(seconds=settings.auth.online_status_ttl_seconds)
+
+    def _normalize_datetime(value: datetime) -> datetime:
+        return value.replace(tzinfo=UTC) if value.tzinfo is None else value
 
     return any(
         session.revoked_at is None
         and (session.expires_at.replace(tzinfo=UTC) if session.expires_at.tzinfo is None else session.expires_at) > now
+        and _normalize_datetime(session.updated_at) >= online_cutoff
         for session in user.refresh_sessions
     )
 

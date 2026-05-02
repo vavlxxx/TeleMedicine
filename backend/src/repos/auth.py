@@ -1,5 +1,8 @@
+from datetime import UTC, datetime, timedelta
+
 from sqlalchemy import func, or_, select
 
+from src.config import settings
 from src.models.auth import RefreshSession, User
 from src.models.enums import UserRole
 from src.repos.base import BaseRepo
@@ -41,14 +44,40 @@ class UserRepo(BaseRepo):
         result = await self.session.execute(statement)
         return list(result.scalars().all())
 
-    async def list_public_doctors(self, specialization_id: int | None, offset: int, limit: int, *options) -> list[User]:
-        statement = (
-            select(User)
-            .where(User.role == UserRole.DOCTOR, User.is_verified_doctor.is_(True))
-            .order_by(User.created_at.desc())
-            .offset(offset)
-            .limit(limit)
-        )
+    async def list_public_doctors(
+        self,
+        specialization_id: int | None,
+        offset: int,
+        limit: int,
+        *options,
+        online_only: bool = False,
+    ) -> list[User]:
+        statement = select(User).where(User.role == UserRole.DOCTOR, User.is_verified_doctor.is_(True))
+
+        if online_only:
+            now = datetime.now(UTC)
+            online_cutoff = now - timedelta(seconds=settings.auth.online_status_ttl_seconds)
+            active_sessions = (
+                select(
+                    RefreshSession.user_id.label("user_id"),
+                    func.max(RefreshSession.updated_at).label("last_activity_at"),
+                )
+                .where(
+                    RefreshSession.revoked_at.is_(None),
+                    RefreshSession.expires_at > now,
+                    RefreshSession.updated_at >= online_cutoff,
+                )
+                .group_by(RefreshSession.user_id)
+                .subquery()
+            )
+            statement = statement.join(active_sessions, active_sessions.c.user_id == User.id).order_by(
+                active_sessions.c.last_activity_at.desc(),
+                User.created_at.desc(),
+            )
+        else:
+            statement = statement.order_by(User.created_at.desc())
+
+        statement = statement.offset(offset).limit(limit)
         if specialization_id is not None:
             statement = statement.where(User.specializations.any(id=specialization_id))
         if options:

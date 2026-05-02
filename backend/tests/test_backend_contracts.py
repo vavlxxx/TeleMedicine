@@ -1,10 +1,13 @@
+from datetime import UTC, datetime, timedelta
+
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
 from src.main import app
-from src.models.auth import User
+from src.models.auth import RefreshSession, User
 from src.models.enums import UserRole
 from src.utils.security import hash_password
 
@@ -272,6 +275,11 @@ async def test_directory_profile_and_question_flow_contracts(ac: AsyncClient, db
     assert directory.json()[0]["id"] == doctor_id
     assert directory.json()[0]["is_online"] is True
 
+    online_directory = await ac.get(f"/doctors/?specialization_id={specialization_id}&online_only=true")
+    assert online_directory.status_code == 200
+    assert len(online_directory.json()) == 1
+    assert online_directory.json()[0]["id"] == doctor_id
+
     public_profile = await ac.get(f"/doctors/{doctor_id}")
     assert public_profile.status_code == 200
     assert public_profile.json()["username"] == "doctor_directory"
@@ -336,3 +344,65 @@ async def test_specialization_crud_and_doctor_profile_contract_fields(
     _, login_payload = await _login(ac, "doctor_contract", "DoctorPass!123")
     assert login_payload["user"]["qualification_documents_count"] == 1
     assert [item["name"] for item in login_payload["user"]["specializations"]] == ["Allergology", "Zoology"]
+
+
+@pytest.mark.asyncio
+async def test_doctor_online_status_uses_recent_presence(ac: AsyncClient, db_session: AsyncSession) -> None:
+    admin = await _create_user(
+        db_session,
+        username="admin_presence",
+        password="AdminPresence!123",
+        role=UserRole.ADMIN,
+    )
+    assert admin.role == UserRole.ADMIN
+    admin_headers, _ = await _login(ac, "admin_presence", "AdminPresence!123")
+
+    specialization = await ac.post("/specializations/", json={"name": "Presence Cardiology"}, headers=admin_headers)
+    assert specialization.status_code == 201
+    specialization_id = specialization.json()["id"]
+
+    register_doctor = await ac.post(
+        "/auth/register/doctor",
+        data={
+            "username": "doctor_presence",
+            "password": "DoctorPresence!123",
+            "specialization_ids": str(specialization_id),
+        },
+        files=[("documents", ("license.pdf", b"%PDF-1.4 presence", "application/pdf"))],
+    )
+    assert register_doctor.status_code == 201
+    doctor_id = register_doctor.json()["id"]
+
+    verify = await ac.patch(
+        f"/admin/doctors/{doctor_id}/verify",
+        json={"is_verified": True},
+        headers=admin_headers,
+    )
+    assert verify.status_code == 200
+
+    doctor_headers, _ = await _login(ac, "doctor_presence", "DoctorPresence!123")
+
+    directory_online_initial = await ac.get("/doctors/?online_only=true")
+    assert directory_online_initial.status_code == 200
+    assert any(item["id"] == doctor_id for item in directory_online_initial.json())
+
+    stale_timestamp = datetime.now(UTC) - timedelta(seconds=settings.auth.online_status_ttl_seconds + 30)
+    await db_session.execute(
+        update(RefreshSession).where(RefreshSession.user_id == doctor_id).values(updated_at=stale_timestamp)
+    )
+    await db_session.commit()
+
+    profile_stale = await ac.get(f"/doctors/{doctor_id}")
+    assert profile_stale.status_code == 200
+    assert profile_stale.json()["is_online"] is False
+
+    directory_online_stale = await ac.get("/doctors/?online_only=true")
+    assert directory_online_stale.status_code == 200
+    assert all(item["id"] != doctor_id for item in directory_online_stale.json())
+
+    touch_presence = await ac.post("/auth/presence", headers=doctor_headers)
+    assert touch_presence.status_code == 204
+
+    profile_after_touch = await ac.get(f"/doctors/{doctor_id}")
+    assert profile_after_touch.status_code == 200
+    assert profile_after_touch.json()["is_online"] is True
