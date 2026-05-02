@@ -1,11 +1,24 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { apiClient } from './api/client'
 import { useAuth } from './auth/AuthContext'
 import { fetchMockTestimonials } from './mocks/testimonials'
+import {
+  buildDoctorProfileHref,
+  buildQuestionHref,
+  getDisplayName,
+  getInitials,
+} from './publicPageUtils'
 import { AppLink } from './router'
 import { getDefaultAuthenticatedPath, routes } from './routes'
 import virtualmedicIcon from './assets/virtualmedic-icon.png'
+import {
+  formatRelativeQuestionTime,
+  getDoctorVisualProfile,
+  getQuestionCategory,
+  summarizeQuestion,
+} from './virtualmedicReference'
 import './App.css'
 
 const navItems = [
@@ -49,6 +62,25 @@ const symptomExamples = [
   'боль в животе',
 ]
 
+const LIVE_FEED_QUESTIONS_LIMIT = 8
+const LIVE_FEED_DOCTORS_LIMIT = 8
+const LIVE_FEED_POLL_INTERVAL_MS = 12_000
+
+function getAnswersLabel(commentsCount) {
+  if (commentsCount === 1) {
+    return '1 ответ'
+  }
+
+  const moduloTen = commentsCount % 10
+  const moduloHundred = commentsCount % 100
+
+  if (moduloTen >= 2 && moduloTen <= 4 && (moduloHundred < 12 || moduloHundred > 14)) {
+    return `${commentsCount} ответа`
+  }
+
+  return `${commentsCount} ответов`
+}
+
 function App() {
   const auth = useAuth()
   const rootRef = useRef(null)
@@ -60,6 +92,11 @@ function App() {
   const [isTestimonialsLoading, setIsTestimonialsLoading] = useState(true)
   const [activeMobileTestimonial, setActiveMobileTestimonial] = useState(0)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [liveQuestions, setLiveQuestions] = useState([])
+  const [onlineDoctors, setOnlineDoctors] = useState([])
+  const [isLiveFeedLoading, setIsLiveFeedLoading] = useState(true)
+  const [liveFeedError, setLiveFeedError] = useState('')
+  const [liveFeedUpdatedAt, setLiveFeedUpdatedAt] = useState(null)
 
   const animatedPlaceholder = `Например: ${typedSymptom}${showTypeCursor ? '|' : ' '}`
   const mobileTestimonialsCount = isTestimonialsLoading ? 3 : testimonials.length
@@ -179,6 +216,55 @@ function App() {
 
     return () => {
       isCancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let isCancelled = false
+
+    const loadLiveFeed = async ({ silent = false } = {}) => {
+      if (!silent) {
+        setIsLiveFeedLoading(true)
+      }
+
+      try {
+        const [questionsResponse, doctorsResponse] = await Promise.all([
+          apiClient.listQuestions({
+            offset: 0,
+            limit: LIVE_FEED_QUESTIONS_LIMIT,
+          }),
+          apiClient.listDoctors({
+            offset: 0,
+            limit: LIVE_FEED_DOCTORS_LIMIT,
+            online_only: true,
+          }),
+        ])
+
+        if (!isCancelled) {
+          setLiveQuestions(questionsResponse)
+          setOnlineDoctors(doctorsResponse.filter((doctor) => doctor.is_online))
+          setLiveFeedError('')
+          setLiveFeedUpdatedAt(new Date())
+        }
+      } catch {
+        if (!isCancelled) {
+          setLiveFeedError('Не удалось обновить live-ленту. Повторим автоматически.')
+        }
+      } finally {
+        if (!isCancelled && !silent) {
+          setIsLiveFeedLoading(false)
+        }
+      }
+    }
+
+    loadLiveFeed()
+    const intervalId = window.setInterval(() => {
+      loadLiveFeed({ silent: true })
+    }, LIVE_FEED_POLL_INTERVAL_MS)
+
+    return () => {
+      isCancelled = true
+      window.clearInterval(intervalId)
     }
   }, [])
 
@@ -713,6 +799,125 @@ function App() {
                 arrow_forward
               </span>
             </AppLink>
+          </div>
+        </section>
+
+        <section className="js-reveal-section px-4 py-8 sm:px-6 sm:py-16 lg:px-8 xl:py-24">
+          <div className="mx-auto w-full max-w-7xl">
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4 sm:mb-10">
+              <div>
+                <h3 className="text-xl font-extrabold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
+                  Лента консультаций в реальном времени
+                </h3>
+                <p className="mt-1 text-sm text-slate-500 sm:text-base">
+                  Новые вопросы и онлайн-врачи появляются автоматически, без перезагрузки страницы.
+                </p>
+              </div>
+              <span className="vm-live-timestamp text-xs font-semibold text-slate-500">
+                {liveFeedUpdatedAt
+                  ? `Обновлено в ${new Intl.DateTimeFormat('ru-RU', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  }).format(liveFeedUpdatedAt)}`
+                  : 'Подключаем live-ленту...'}
+              </span>
+            </div>
+
+            <div className="vm-live-layout">
+              <article className="vm-live-panel">
+                <header className="vm-live-panel__header">
+                  <h4>Последние вопросы</h4>
+                  <AppLink className="vm-live-panel__link" href={routes.questions}>
+                    Все вопросы
+                  </AppLink>
+                </header>
+
+                {isLiveFeedLoading ? (
+                  <p className="vm-live-panel__state">Загружаем актуальную ленту вопросов...</p>
+                ) : null}
+
+                {!isLiveFeedLoading && liveFeedError ? (
+                  <p className="vm-live-panel__state vm-live-panel__state--error">{liveFeedError}</p>
+                ) : null}
+
+                {!isLiveFeedLoading && !liveFeedError ? (
+                  <div className="vm-live-question-list">
+                    {liveQuestions.map((question) => {
+                      const commentsCount = question.comments.length
+
+                      return (
+                        <AppLink
+                          key={question.id}
+                          className="vm-live-question-item"
+                          href={buildQuestionHref(question.id)}
+                        >
+                          <div className="vm-live-question-item__head">
+                            <span className="vm-live-question-item__title">
+                              {summarizeQuestion(question.text, 95)}
+                            </span>
+                            <span className={`vm-live-question-item__badge ${commentsCount ? 'is-success' : ''}`}>
+                              {commentsCount ? getAnswersLabel(commentsCount) : 'Ожидает'}
+                            </span>
+                          </div>
+                          <div className="vm-live-question-item__meta">
+                            <span>{getQuestionCategory(question)}</span>
+                            <span>{formatRelativeQuestionTime(question.created_at)}</span>
+                          </div>
+                        </AppLink>
+                      )
+                    })}
+
+                    {!liveQuestions.length ? (
+                      <p className="vm-live-panel__state">Пока нет опубликованных вопросов.</p>
+                    ) : null}
+                  </div>
+                ) : null}
+              </article>
+
+              <aside className="vm-live-panel vm-live-panel--aside">
+                <header className="vm-live-panel__header">
+                  <h4>Врачи онлайн</h4>
+                  <span className="vm-live-online-count">{onlineDoctors.length}</span>
+                </header>
+
+                {isLiveFeedLoading ? (
+                  <p className="vm-live-panel__state">Загружаем список онлайн-врачей...</p>
+                ) : null}
+
+                {!isLiveFeedLoading && !onlineDoctors.length ? (
+                  <p className="vm-live-panel__state">Сейчас нет врачей онлайн.</p>
+                ) : null}
+
+                {!isLiveFeedLoading && onlineDoctors.length ? (
+                  <div className="vm-live-doctor-list">
+                    {onlineDoctors.map((doctor) => {
+                      const profile = getDoctorVisualProfile(doctor)
+
+                      return (
+                        <AppLink
+                          key={doctor.id}
+                          className="vm-live-doctor-item"
+                          href={buildDoctorProfileHref(doctor.id)}
+                        >
+                          <span
+                            className="vm-live-doctor-item__avatar"
+                            style={{ background: profile.theme.background }}
+                            aria-hidden="true"
+                          >
+                            {getInitials(doctor)}
+                          </span>
+                          <span className="vm-live-doctor-item__body">
+                            <strong>{getDisplayName(doctor)}</strong>
+                            <span>{doctor.specializations[0]?.name || 'Врач'}</span>
+                          </span>
+                          <span className="vm-live-doctor-item__online" aria-label="Сейчас онлайн" />
+                        </AppLink>
+                      )
+                    })}
+                  </div>
+                ) : null}
+              </aside>
+            </div>
           </div>
         </section>
 

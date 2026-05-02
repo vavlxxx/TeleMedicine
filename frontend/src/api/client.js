@@ -230,6 +230,13 @@ export const apiClient = {
     })
   },
 
+  sendPresence() {
+    return request('/auth/presence', {
+      method: 'POST',
+      auth: true,
+    })
+  },
+
   refreshSession() {
     return request('/auth/refresh', {
       method: 'POST',

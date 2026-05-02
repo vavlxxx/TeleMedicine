@@ -14,8 +14,14 @@ async def list_doctors(
     specialization_id: int | None = Query(default=None, ge=1),
     offset: int = Query(default=0, ge=0),
     limit: int = Query(default=20, ge=1, le=100),
+    online_only: bool = Query(default=False),
 ) -> list[DoctorListItemDTO]:
-    return await DoctorService(db).list_doctors(specialization_id=specialization_id, offset=offset, limit=limit)
+    return await DoctorService(db).list_doctors(
+        specialization_id=specialization_id,
+        offset=offset,
+        limit=limit,
+        online_only=online_only,
+    )
 
 
 @router.get("/{doctor_id}", response_model=DoctorListItemDTO)

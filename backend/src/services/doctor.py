@@ -18,8 +18,20 @@ def _cleanup_files(file_names: list[str]) -> None:
 
 
 class DoctorService(BaseService):
-    async def list_doctors(self, specialization_id: int | None, offset: int, limit: int) -> list[DoctorListItemDTO]:
-        doctors = await self.db.users.list_public_doctors(specialization_id, offset, limit, *DOCTOR_DIRECTORY_OPTIONS)
+    async def list_doctors(
+        self,
+        specialization_id: int | None,
+        offset: int,
+        limit: int,
+        online_only: bool = False,
+    ) -> list[DoctorListItemDTO]:
+        doctors = await self.db.users.list_public_doctors(
+            specialization_id,
+            offset,
+            limit,
+            *DOCTOR_DIRECTORY_OPTIONS,
+            online_only=online_only,
+        )
         return [to_doctor_list_item(item) for item in doctors]
 
     async def get_doctor(self, doctor_id: int) -> DoctorListItemDTO:
