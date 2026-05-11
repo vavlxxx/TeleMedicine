@@ -51,6 +51,9 @@ jobs:
       - name: Pyright
         run: poetry run python -m pyright
 
+      - name: Prepare backend environment
+        run: cp .env.template .env
+
       - name: Pytest
         run: poetry run python -m pytest -v
 
@@ -92,6 +95,13 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Validate compose files
+        run: |
+          cp backend/.env.template backend/.env.docker
+          cp backend/.env.postgres.template backend/.env.postgres
+          docker compose -f ./local.docker-compose.yaml config --quiet
+          docker compose -f ./docker-compose.yaml config --quiet
 
       - name: Build backend image
         run: docker build --tag virtualmedic-backend:ci ./backend
@@ -162,7 +172,7 @@ jobs:
 
       - name: Upload runtime env files
         run: |
-          scp -P "$SERVER_PORT" .deploy-env/backend.env "$SERVER_USER@$SERVER_HOST:$DEPLOY_PATH/backend/.env"
+          scp -P "$SERVER_PORT" .deploy-env/backend.env "$SERVER_USER@$SERVER_HOST:$DEPLOY_PATH/backend/.env.docker"
           scp -P "$SERVER_PORT" .deploy-env/postgres.env "$SERVER_USER@$SERVER_HOST:$DEPLOY_PATH/backend/.env.postgres"
         env:
           SERVER_HOST: ${{ secrets.SERVER_HOST }}
