@@ -13,6 +13,7 @@ import {
 import { AppLink } from './router'
 import { getDefaultAuthenticatedPath, routes } from './routes'
 import virtualmedicIcon from './assets/virtualmedic-icon.png'
+import { AskDoctorWizardModal } from './AskDoctorWizardModal'
 import {
   formatRelativeQuestionTime,
   getDoctorVisualProfile,
@@ -97,6 +98,8 @@ function App() {
   const [isLiveFeedLoading, setIsLiveFeedLoading] = useState(true)
   const [liveFeedError, setLiveFeedError] = useState('')
   const [liveFeedUpdatedAt, setLiveFeedUpdatedAt] = useState(null)
+  const [heroQuestion, setHeroQuestion] = useState('')
+  const [isAskDoctorModalOpen, setIsAskDoctorModalOpen] = useState(false)
 
   const animatedPlaceholder = `Например: ${typedSymptom}${showTypeCursor ? '|' : ' '}`
   const mobileTestimonialsCount = isTestimonialsLoading ? 3 : testimonials.length
@@ -108,6 +111,14 @@ function App() {
       ? 'Панель модерации'
       : 'Мой профиль'
     : 'Регистрация'
+
+  const openAskDoctorModal = () => {
+    setIsAskDoctorModalOpen(true)
+  }
+
+  const closeAskDoctorModal = () => {
+    setIsAskDoctorModalOpen(false)
+  }
 
   const goToMobileTestimonial = (index) => {
     if (!mobileTestimonialsCount) {
@@ -628,18 +639,21 @@ function App() {
                     className="w-full rounded-xl border border-slate-200 bg-white py-3.5 pr-4 pl-11 text-sm shadow-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20 sm:rounded-2xl sm:py-4 sm:pl-12 sm:text-base"
                     placeholder={animatedPlaceholder}
                     type="text"
+                    value={heroQuestion}
+                    onChange={(event) => setHeroQuestion(event.target.value)}
                   />
                 </div>
 
-                <AppLink
+                <button
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-base font-bold text-white shadow-lg shadow-primary/20 transition-all hover:bg-[#142e70] sm:rounded-2xl sm:px-8 sm:py-4 sm:text-lg sm:shadow-xl sm:shadow-primary/30 sm:hover:scale-[1.02]"
-                  href={routes.questions}
+                  type="button"
+                  onClick={openAskDoctorModal}
                 >
                   <span>Задать вопрос</span>
                   <span className="material-symbols-outlined text-lg sm:text-xl">
                     chat_bubble
                   </span>
-                </AppLink>
+                </button>
               </div>
 
               <div className="js-hero-reveal mt-1 hidden items-center gap-4 md:flex">
@@ -1318,6 +1332,13 @@ function App() {
           </div>
         </div>
       </footer>
+
+      <AskDoctorWizardModal
+        isOpen={isAskDoctorModalOpen}
+        initialQuestion={heroQuestion}
+        onClose={closeAskDoctorModal}
+        onQuestionCreated={() => setHeroQuestion('')}
+      />
     </div>
   )
 }

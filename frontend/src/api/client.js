@@ -143,7 +143,7 @@ async function request(path, options = {}) {
         ? payload.detail
         : response.status === 401
           ? 'Authentication required'
-          : 'API request failed'
+          : 'Не удалось выполнить запрос. Повторите попытку.'
 
     if (response.status === 401 && settings.auth) {
       handleAuthFailure()
@@ -334,6 +334,10 @@ export const apiClient = {
 
   getQuestion(questionId) {
     return request(`/questions/${questionId}`)
+  },
+
+  getFreeQueueStatus() {
+    return request('/questions/free-queue')
   },
 
   createQuestion(payload) {
