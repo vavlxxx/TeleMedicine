@@ -427,23 +427,55 @@ html {
 }
 
 .ask-format-card {
+  position: relative;
+  overflow: hidden;
   border: 1px solid #d8e6f8;
   border-radius: 1.2rem;
-  background: linear-gradient(180deg, #6ab4f2 0%, #3f95e7 100%);
-  color: #ffffff;
+  background: #ffffff;
+  color: #334155;
   text-align: left;
   padding: 0.95rem;
   cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    background 180ms ease,
+    transform 180ms ease;
 }
 
 .ask-format-card--free {
-  background: #ffffff;
   color: #64748b;
   border-color: #dbe2ec;
 }
 
 .ask-format-card.is-active {
-  box-shadow: 0 0 0 3px rgba(96, 164, 229, 0.28);
+  border-color: #1d72c9;
+  background:
+    radial-gradient(circle at 92% 12%, rgba(255, 255, 255, 0.24), transparent 18rem),
+    linear-gradient(180deg, #67b7f5 0%, #2f8fe3 100%);
+  color: #ffffff;
+  padding-bottom: 2.45rem;
+  box-shadow:
+    0 0 0 5px rgba(96, 164, 229, 0.25),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.72),
+    0 18px 34px rgba(47, 143, 227, 0.28);
+  transform: translateY(-1px);
+}
+
+.ask-format-card.is-active::after {
+  content: 'Выбрано';
+  position: absolute;
+  right: 0.95rem;
+  bottom: 0.95rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  color: #1d72c9;
+  padding: 0.28rem 0.62rem;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .ask-format-card__head {
@@ -460,9 +492,14 @@ html {
 }
 
 .ask-format-card__price {
+  color: #2f8fe3;
   font-size: 1.9rem;
   font-weight: 800;
   letter-spacing: -0.02em;
+}
+
+.ask-format-card.is-active .ask-format-card__price {
+  color: #ffffff;
 }
 
 .ask-format-card__queue {
@@ -474,6 +511,11 @@ html {
   padding: 0.32rem 0.64rem;
   font-size: 0.95rem;
   font-weight: 800;
+}
+
+.ask-format-card.is-active .ask-format-card__queue {
+  background: rgba(255, 255, 255, 0.96);
+  color: #1d72c9;
 }
 
 .ask-format-card ul {

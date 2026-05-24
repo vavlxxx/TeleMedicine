@@ -45,6 +45,26 @@ function parseAge(value) {
   return parsed
 }
 
+function formatQueuePeopleCount(count) {
+  const normalizedCount = Math.abs(count)
+  const lastTwoDigits = normalizedCount % 100
+  const lastDigit = normalizedCount % 10
+
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+    return `${count} человек`
+  }
+
+  if (lastDigit === 1) {
+    return `${count} человек`
+  }
+
+  if (lastDigit >= 2 && lastDigit <= 4) {
+    return `${count} человека`
+  }
+
+  return `${count} человек`
+}
+
 export function AskDoctorWizardModal({
   isOpen,
   initialQuestion = '',
@@ -95,6 +115,10 @@ export function AskDoctorWizardModal({
 
   const detailsLength = details.length
   const isPaidFormat = questionFormat === 'paid'
+  const freeQueueLabel =
+    freeQueuePendingCount > 0
+      ? `Перед вами ${formatQueuePeopleCount(freeQueuePendingCount)} в очереди`
+      : 'Ваш вопрос сейчас станет первым'
 
   const selectedSpecializationLabel = useMemo(
     () => specializations.find((item) => String(item.id) === selectedSpecializationId)?.name || '',
@@ -612,7 +636,7 @@ export function AskDoctorWizardModal({
               >
                 <div className="ask-format-card__head">
                   <strong>Очередь до 3 дней</strong>
-                  <span className="ask-format-card__queue">Вы ~{freeQueuePendingCount} на бесплатный вопрос</span>
+                  <span className="ask-format-card__queue">{freeQueueLabel}</span>
                 </div>
                 <ul>
                   <li>Без оплаты и гарантии ответа</li>
