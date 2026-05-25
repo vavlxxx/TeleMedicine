@@ -15,6 +15,7 @@ from src.schemas.admin import (
     AdminUsersResponseDTO,
     PendingDoctorsResponseDTO,
     UpdateUserStatusRequestDTO,
+    AdminUpdateUserRequestDTO,
     VerifyDoctorRequestDTO,
 )
 from src.schemas.doctor import DoctorDetailDTO
@@ -71,6 +72,16 @@ async def update_user_status(
     admin: AdminDep,
 ) -> AdminUserListItemDTO:
     return await AdminService(db).update_user_status(user_id=user_id, payload=payload, admin=admin)
+
+
+@router.patch("/users/{user_id}", response_model=AdminUserListItemDTO)
+async def update_user(
+    user_id: int,
+    payload: AdminUpdateUserRequestDTO,
+    db: DBDep,
+    admin: AdminDep,
+) -> AdminUserListItemDTO:
+    return await AdminService(db).update_user(user_id=user_id, payload=payload, admin=admin)
 
 
 @router.delete("/users/{user_id}", status_code=204)

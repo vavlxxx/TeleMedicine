@@ -16,6 +16,7 @@ from src.schemas.admin import (
     AdminUsersResponseDTO,
     PendingDoctorsResponseDTO,
     UpdateUserStatusRequestDTO,
+    AdminUpdateUserRequestDTO,
     VerifyDoctorRequestDTO,
 )
 from src.schemas.doctor import DoctorDetailDTO
@@ -102,6 +103,28 @@ class AdminService(BaseService):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
         user.is_active = payload.is_active
+        await self.db.commit()
+        return to_admin_user_item(user)
+
+    async def update_user(
+        self,
+        user_id: int,
+        payload: AdminUpdateUserRequestDTO,
+        admin: User,
+    ) -> AdminUserListItemDTO:
+        user = await self.db.users.get_by_id(user_id, *ADMIN_USER_OPTIONS)
+        if user is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+        if payload.first_name is not None:
+            user.first_name = payload.first_name
+        if payload.last_name is not None:
+            user.last_name = payload.last_name
+        if payload.role is not None:
+            if user_id == admin.id and payload.role != admin.role:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot change your own role")
+            user.role = payload.role
+
         await self.db.commit()
         return to_admin_user_item(user)
 

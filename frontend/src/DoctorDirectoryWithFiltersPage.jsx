@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ApiError, apiClient } from './api/client'
 import { AppLink } from './router'
 import { buildDoctorProfileHref, getDisplayName, parsePositiveInteger } from './publicPageUtils'
@@ -34,6 +34,17 @@ function DoctorDirectoryWithFiltersPage() {
   const [draftOnlineOnly, setDraftOnlineOnly] = useState(false)
   const [appliedOnlineOnly, setAppliedOnlineOnly] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const specialtiesRef = useRef(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (specialtiesRef.current && !specialtiesRef.current.contains(event.target)) {
+        specialtiesRef.current.removeAttribute('open')
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const [specializations, setSpecializations] = useState([])
   const [doctors, setDoctors] = useState([])
@@ -218,7 +229,7 @@ function DoctorDirectoryWithFiltersPage() {
           <div className="vm-page-hero">
             <div>
               <h1>Специалисты онлайн</h1>
-              <p>Найдите подходящего врача и перейдите в детальную карточку для консультации.</p>
+              <p>Найдите подходящего врача и перейдите в его профиль для записи на консультацию.</p>
             </div>
           </div>
 
@@ -255,7 +266,7 @@ function DoctorDirectoryWithFiltersPage() {
                     <span className="material-symbols-outlined">medical_services</span>
                     Специальность
                   </span>
-                  <details className="vm-multiselect">
+                  <details className="vm-multiselect" ref={specialtiesRef}>
                     <summary>
                       {draftSpecializationIds.length
                         ? `Выбрано: ${draftSpecializationIds.length}`
@@ -434,7 +445,11 @@ function DoctorDirectoryWithFiltersPage() {
                             <div className="vm-overline">
                               {doctor.specializations[0]?.name || 'Специалист'}
                             </div>
-                            <h2 className="vm-doctor-card__title">{getDisplayName(doctor)}</h2>
+                            <h2 className="vm-doctor-card__title">
+                              <AppLink href={buildDoctorProfileHref(doctor.id)} style={{ color: 'inherit', textDecoration: 'none' }}>
+                                {getDisplayName(doctor)}
+                              </AppLink>
+                            </h2>
                             <p className="vm-muted">
                               {doctor.visualProfile.experience} · {doctor.visualProfile.qualification}
                             </p>

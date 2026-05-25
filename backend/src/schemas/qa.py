@@ -119,6 +119,7 @@ class UserShortDTO(BaseDTO):
     role: UserRole
     first_name: str | None
     last_name: str | None
+    middle_name: str | None
     is_verified_doctor: bool
 
 

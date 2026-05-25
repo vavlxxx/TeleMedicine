@@ -34,6 +34,7 @@ async def register_doctor(
     password: str = Form(...),
     first_name: str | None = Form(default=None),
     last_name: str | None = Form(default=None),
+    middle_name: str | None = Form(default=None),
     specialization_ids: list[int] = Form(...),
     documents: list[UploadFile] = File(...),
 ) -> UserProfileDTO:
@@ -43,6 +44,7 @@ async def register_doctor(
             password=password,
             first_name=first_name,
             last_name=last_name,
+            middle_name=middle_name,
             specialization_ids=specialization_ids,
         )
     except ValidationError as exc:

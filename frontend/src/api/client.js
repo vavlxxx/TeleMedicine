@@ -302,6 +302,10 @@ export const apiClient = {
     return request('/specializations/')
   },
 
+  listAdminSpecializations() {
+    return request('/specializations/', { auth: true })
+  },
+
   createSpecialization(payload) {
     return request('/specializations/', {
       method: 'POST',
@@ -394,6 +398,14 @@ export const apiClient = {
 
   updateAdminUserStatus(userId, payload) {
     return request(`/admin/users/${userId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+      auth: true,
+    })
+  },
+
+  updateAdminUser(userId, payload) {
+    return request(`/admin/users/${userId}`, {
       method: 'PATCH',
       body: JSON.stringify(payload),
       auth: true,

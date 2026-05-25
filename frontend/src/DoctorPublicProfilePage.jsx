@@ -250,7 +250,7 @@ function DoctorPublicProfilePage() {
           {!doctorId ? (
             <section className="vm-card vm-empty-state">
               <h2>Врач не выбран</h2>
-              <p>Вернитесь в каталог и откройте карточку нужного врача.</p>
+              <p>Вернитесь в каталог и выберите нужного врача.</p>
               <AppLink className="vm-button" href={routes.doctors}>
                 В каталог врачей
               </AppLink>
@@ -260,7 +260,7 @@ function DoctorPublicProfilePage() {
           {isLoading ? (
             <section className="vm-card vm-empty-state">
               <h2>Загружаем профиль врача</h2>
-              <p>Подготавливаем карточку специалиста.</p>
+              <p>Пожалуйста, подождите. Загружаем информацию о специалисте...</p>
             </section>
           ) : null}
 

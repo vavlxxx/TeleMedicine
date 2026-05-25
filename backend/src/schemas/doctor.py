@@ -49,6 +49,7 @@ class DoctorListItemDTO(BaseDTO):
     role: UserRole
     first_name: str | None
     last_name: str | None
+    middle_name: str | None
     is_verified_doctor: bool
     is_online: bool
     specializations: list[SpecializationDTO] = Field(default_factory=list)
