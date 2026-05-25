@@ -186,6 +186,22 @@ function appendDoctorRegistrationFields(formData, payload) {
     formData.set('last_name', payload.last_name)
   }
 
+  if (payload.middle_name) {
+    formData.set('middle_name', payload.middle_name)
+  }
+
+  if (payload.gender) {
+    formData.set('gender', payload.gender)
+  }
+
+  if (payload.birth_date) {
+    formData.set('birth_date', payload.birth_date)
+  }
+
+  if (typeof payload.birth_date_visible_to_doctors === 'boolean') {
+    formData.set('birth_date_visible_to_doctors', String(payload.birth_date_visible_to_doctors))
+  }
+
   payload.specialization_ids.forEach((item) => {
     formData.append('specialization_ids', String(item))
   })

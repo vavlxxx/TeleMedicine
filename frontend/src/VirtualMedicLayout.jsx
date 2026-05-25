@@ -59,7 +59,7 @@ export function VirtualMedicHeader({
               <summary className="vm-header__profile">
                 <span className="vm-header__profile-text" title={displayName}>{displayName}</span>
                 <span className="vm-header__avatar" aria-hidden="true">
-                  <ProfileImage alt="" src={auth.user?.avatar_url} />
+                  <ProfileImage alt="" src={auth.user?.avatar_url} gender={auth.user?.gender} />
                 </span>
                 <span className="material-symbols-outlined vm-header__chevron" aria-hidden="true">expand_more</span>
               </summary>

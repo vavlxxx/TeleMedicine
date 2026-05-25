@@ -734,6 +734,24 @@
   min-height: 44px;
 }
 
+.account-profile-privacy-checkbox {
+  align-items: start;
+}
+
+.account-checkbox-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #1a2a44;
+  font-weight: 500;
+}
+
+.account-checkbox-inline input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: #1a3b8e;
+}
+
 .account-save-row {
   justify-content: flex-end;
   padding-top: 6px;

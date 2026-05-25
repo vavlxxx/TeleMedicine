@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import Base
-from src.models.enums import UserRole
+from src.models.enums import UserGender, UserRole
 
 if TYPE_CHECKING:
     from src.models.doctor import DoctorQualificationDocument, Specialization
     from src.models.qa import Question, QuestionComment
 
 
-def _user_role_values(enum_cls: type[UserRole]) -> list[str]:
+def _enum_values(enum_cls: type[UserRole] | type[UserGender]) -> list[str]:
     return [item.value for item in enum_cls]
 
 
@@ -27,9 +27,15 @@ class User(Base):
     first_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
     last_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
     middle_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    gender: Mapped[UserGender | None] = mapped_column(
+        Enum(UserGender, name="user_gender", values_callable=_enum_values),
+        nullable=True,
+    )
+    birth_date: Mapped[date | None] = mapped_column(nullable=True)
+    birth_date_visible_to_doctors: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole, name="user_role", values_callable=_user_role_values),
+        Enum(UserRole, name="user_role", values_callable=_enum_values),
         default=UserRole.PATIENT,
         nullable=False,
     )
