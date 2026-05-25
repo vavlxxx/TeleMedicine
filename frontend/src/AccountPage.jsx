@@ -44,10 +44,8 @@ function validateProfileForm(values) {
   const errors = {}
   const firstName = normalizeOptionalTextValue(values.first_name)
   const lastName = normalizeOptionalTextValue(values.last_name)
-
-  if (!firstName && !lastName) {
-    errors.first_name = 'Укажите хотя бы имя или фамилию'
-  }
+  const birthDate = values.birth_date || ''
+  const maxBirthDate = new Date().toISOString().slice(0, 10)
 
   if (firstName.length > 120) {
     errors.first_name = 'Имя не должно превышать 120 символов'
@@ -55,6 +53,10 @@ function validateProfileForm(values) {
 
   if (lastName.length > 120) {
     errors.last_name = 'Фамилия не должна превышать 120 символов'
+  }
+
+  if (birthDate && birthDate > maxBirthDate) {
+    errors.birth_date = 'Дата рождения не может быть в будущем'
   }
 
   return errors
@@ -134,7 +136,13 @@ function AccountPage() {
   const [isProfileLoading, setIsProfileLoading] = useState(() => !auth.user)
   const [profileLoadError, setProfileLoadError] = useState('')
 
-  const [profileValues, setProfileValues] = useState({ first_name: '', last_name: '' })
+  const [profileValues, setProfileValues] = useState({
+    first_name: '',
+    last_name: '',
+    gender: '',
+    birth_date: '',
+    birth_date_visible_to_doctors: false,
+  })
   const [profileErrors, setProfileErrors] = useState({})
   const [profileMessage, setProfileMessage] = useState('')
   const [profileFormError, setProfileFormError] = useState('')
@@ -163,8 +171,17 @@ function AccountPage() {
     setProfileValues({
       first_name: auth.user?.first_name || '',
       last_name: auth.user?.last_name || '',
+      gender: auth.user?.gender || '',
+      birth_date: auth.user?.birth_date ? auth.user.birth_date.slice(0, 10) : '',
+      birth_date_visible_to_doctors: Boolean(auth.user?.birth_date_visible_to_doctors),
     })
-  }, [auth.user?.first_name, auth.user?.last_name])
+  }, [
+    auth.user?.birth_date,
+    auth.user?.birth_date_visible_to_doctors,
+    auth.user?.first_name,
+    auth.user?.gender,
+    auth.user?.last_name,
+  ])
 
   useEffect(() => {
     if (!isAuthenticated || !currentUserId) {
@@ -282,6 +299,9 @@ function AccountPage() {
         await auth.updateProfile({
           first_name: normalizeOptionalTextValue(profileValues.first_name) || null,
           last_name: normalizeOptionalTextValue(profileValues.last_name) || null,
+          gender: profileValues.gender || null,
+          birth_date: profileValues.birth_date || null,
+          birth_date_visible_to_doctors: Boolean(profileValues.birth_date_visible_to_doctors),
         })
 
         if (shouldChangePassword) {
@@ -468,7 +488,7 @@ function AccountPage() {
         <div className="account-modern-profile">
           <section className="vm-card vm-modern-profile-hero account-modern-profile__hero">
             <div className="vm-modern-profile-photo">
-              <ProfileImage alt={formatName(auth.user)} src={auth.user.avatar_url} />
+              <ProfileImage alt={formatName(auth.user)} src={auth.user.avatar_url} gender={auth.user.gender} />
             </div>
 
             <div className="vm-modern-profile-main">
@@ -560,7 +580,7 @@ function AccountPage() {
               <div>
                 <h2 className="account-section__title">Профиль</h2>
                 <p className="account-section__text">
-                  Укажите имя и фамилию, которые будут видны в личном кабинете.
+                  Заполните имя, пол и дату рождения, а также настройте видимость даты рождения для врачей.
                 </p>
               </div>
 
@@ -592,6 +612,62 @@ function AccountPage() {
                     <span className="auth-field__error">{profileErrors.last_name}</span>
                   ) : null}
                 </label>
+
+                <label className="auth-field account-list-field">
+                  <span className="auth-field__label">Пол</span>
+                  <select
+                    className={`auth-field__input ${profileErrors.gender ? 'auth-field__input--error' : ''}`}
+                    value={profileValues.gender}
+                    onChange={handleProfileChange('gender')}
+                    disabled={isProfileSubmitting}
+                  >
+                    <option value="">Не указан</option>
+                    <option value="female">Женский</option>
+                    <option value="male">Мужской</option>
+                  </select>
+                  {profileErrors.gender ? (
+                    <span className="auth-field__error">{profileErrors.gender}</span>
+                  ) : null}
+                </label>
+
+                <label className="auth-field account-list-field">
+                  <span className="auth-field__label">Дата рождения</span>
+                  <input
+                    className={`auth-field__input ${profileErrors.birth_date ? 'auth-field__input--error' : ''}`}
+                    type="date"
+                    value={profileValues.birth_date}
+                    max={new Date().toISOString().slice(0, 10)}
+                    onChange={handleProfileChange('birth_date')}
+                    disabled={isProfileSubmitting}
+                  />
+                  {profileErrors.birth_date ? (
+                    <span className="auth-field__error">{profileErrors.birth_date}</span>
+                  ) : null}
+                </label>
+
+                <div className="auth-field account-list-field account-profile-privacy-checkbox">
+                  <span className="auth-field__label">Видимость даты рождения</span>
+                  <label className="account-checkbox-inline">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(profileValues.birth_date_visible_to_doctors)}
+                      onChange={(event) => {
+                        setProfileValues((current) => ({
+                          ...current,
+                          birth_date_visible_to_doctors: event.target.checked,
+                        }))
+                        setProfileErrors((current) => ({
+                          ...current,
+                          birth_date_visible_to_doctors: '',
+                        }))
+                        setProfileMessage('')
+                        setProfileFormError('')
+                      }}
+                      disabled={isProfileSubmitting}
+                    />
+                    <span>Показывать дату рождения врачам</span>
+                  </label>
+                </div>
               </div>
             </section>
 

@@ -18,8 +18,10 @@ import NotFoundPage from './NotFoundPage.jsx'
 import { MaintenanceGate, MaintenanceProvider } from './maintenance/MaintenanceContext.jsx'
 import { AuthProvider } from './auth/AuthContext.jsx'
 import { GuestOnlyRoute, ProtectedRoute } from './RouteGuards.jsx'
+import { PatientProfileCompletionGate } from './PatientProfileCompletionGate.jsx'
 import { RouterProvider, useRouter } from './router.jsx'
 import { routes } from './routes.js'
+import './patient-profile-gate.css'
 
 const routeMap = {
   [routes.landing]: { component: App, access: 'public' },
@@ -141,6 +143,7 @@ function RootApp() {
         <MaintenanceProvider>
           <MaintenanceGate>
             <RouteRenderer />
+            <PatientProfileCompletionGate />
           </MaintenanceGate>
         </MaintenanceProvider>
       </AuthProvider>

@@ -8,6 +8,11 @@ class UserRole(str, Enum):
     DOCTOR = "doctor"
 
 
+class UserGender(str, Enum):
+    MALE = "male"
+    FEMALE = "female"
+
+
 class JwtTokenType(str, Enum):
     ACCESS = "access"
     REFRESH = "refresh"

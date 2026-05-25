@@ -1,10 +1,10 @@
-import placeholderImage from './assets/placeholder600x400.png'
+import { getProfileImageFallbackSrc, resolveProfileImageSrc } from './profileImageSupport'
 
-export function ProfileImage({ alt = '', className = '', src }) {
+export function ProfileImage({ alt = '', className = '', src, gender = null }) {
   const handleError = (event) => {
     if (!event.currentTarget.dataset.fallbackApplied) {
       event.currentTarget.dataset.fallbackApplied = 'true'
-      event.currentTarget.src = placeholderImage
+      event.currentTarget.src = getProfileImageFallbackSrc()
     }
   }
 
@@ -12,7 +12,7 @@ export function ProfileImage({ alt = '', className = '', src }) {
     <img
       alt={alt}
       className={className}
-      src={src || placeholderImage}
+      src={resolveProfileImageSrc({ src, gender })}
       onError={handleError}
       loading="lazy"
     />

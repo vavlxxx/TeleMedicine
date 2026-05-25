@@ -42,9 +42,33 @@ async def test_register_patient_and_duplicate_username(ac: AsyncClient) -> None:
     body = response.json()
     assert body["username"] == payload["username"]
     assert body["role"] == "patient"
+    assert body["gender"] is None
+    assert body["birth_date"] is None
+    assert body["birth_date_visible_to_doctors"] is False
 
     duplicate = await ac.post("/auth/register/patient", json=payload)
     assert duplicate.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_patient_profile_can_store_gender_birth_date_and_doctor_visibility(ac: AsyncClient) -> None:
+    access_token = await _register_and_login_patient(ac, "patient_profile_data", "StrongPass!123")
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    response = await ac.patch(
+        "/auth/me",
+        headers=headers,
+        json={
+            "gender": "female",
+            "birth_date": "1994-03-18",
+            "birth_date_visible_to_doctors": True,
+        },
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["gender"] == "female"
+    assert body["birth_date"] == "1994-03-18"
+    assert body["birth_date_visible_to_doctors"] is True
 
 
 @pytest.mark.asyncio

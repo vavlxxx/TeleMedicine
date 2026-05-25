@@ -1,9 +1,10 @@
 import re
+from datetime import date
 from typing import Any
 
 from pydantic import Field, field_validator, model_validator
 
-from src.models.enums import UserRole
+from src.models.enums import UserGender, UserRole
 from src.schemas.base import BaseDTO
 
 USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_.-]{4,64}$")
@@ -30,6 +31,14 @@ def normalize_optional_name(value: str | None) -> str | None:
     return value or None
 
 
+def validate_birth_date(value: date | None) -> date | None:
+    if value is None:
+        return None
+    if value > date.today():
+        raise ValueError("birth_date cannot be in the future")
+    return value
+
+
 class LoginRequest(BaseDTO):
     username: str = Field(min_length=4, max_length=64)
     password: str = Field(min_length=1, max_length=128)
@@ -46,6 +55,9 @@ class RegisterPatientRequest(BaseDTO):
     first_name: str | None = Field(default=None, max_length=120)
     last_name: str | None = Field(default=None, max_length=120)
     middle_name: str | None = Field(default=None, max_length=120)
+    gender: UserGender | None = None
+    birth_date: date | None = None
+    birth_date_visible_to_doctors: bool = False
 
     @field_validator("username")
     @classmethod
@@ -61,6 +73,11 @@ class RegisterPatientRequest(BaseDTO):
     @classmethod
     def normalize_name_fields(cls, value: str | None) -> str | None:
         return normalize_optional_name(value)
+
+    @field_validator("birth_date")
+    @classmethod
+    def validate_birth_date_field(cls, value: date | None) -> date | None:
+        return validate_birth_date(value)
 
 
 class RegisterDoctorMetaRequest(RegisterPatientRequest):
@@ -81,18 +98,41 @@ class ProfileUpdateRequest(BaseDTO):
     first_name: str | None = Field(default=None, max_length=120)
     last_name: str | None = Field(default=None, max_length=120)
     middle_name: str | None = Field(default=None, max_length=120)
+    gender: UserGender | None = None
+    birth_date: date | None = None
+    birth_date_visible_to_doctors: bool | None = None
 
     @field_validator("first_name", "last_name", "middle_name")
     @classmethod
     def normalize_name_fields(cls, value: str | None) -> str | None:
         return normalize_optional_name(value)
 
+    @field_validator("birth_date")
+    @classmethod
+    def validate_birth_date_field(cls, value: date | None) -> date | None:
+        return validate_birth_date(value)
+
     @model_validator(mode="before")
     @classmethod
     def ensure_any_field(cls, data: Any) -> Any:
         if not isinstance(data, dict):
             return data
-        if not any(value is not None and str(value).strip() for value in data.values()):
+        has_any_field = False
+
+        for value in data.values():
+            if value is None:
+                continue
+
+            if isinstance(value, str):
+                if value.strip():
+                    has_any_field = True
+                    break
+                continue
+
+            has_any_field = True
+            break
+
+        if not has_any_field:
             raise ValueError("Provide at least one profile field")
         return data
 
@@ -119,6 +159,9 @@ class UserProfileDTO(BaseDTO):
     first_name: str | None
     last_name: str | None
     middle_name: str | None
+    gender: UserGender | None = None
+    birth_date: date | None = None
+    birth_date_visible_to_doctors: bool = False
     avatar_url: str | None = None
     is_active: bool
     is_verified_doctor: bool
