@@ -1,3 +1,5 @@
+from datetime import date
+
 from fastapi import APIRouter, File, Form, Request, Response, UploadFile, status
 from fastapi.responses import FileResponse
 from pydantic import ValidationError
@@ -5,6 +7,7 @@ from pydantic import ValidationError
 from src.api.v1.dependencies.auth import CurrentUserDep, RefreshContextDep
 from src.api.v1.dependencies.db import DBDep
 from src.config import settings
+from src.models.enums import UserGender
 from src.schemas.auth import (
     AuthTokenResponseDTO,
     LoginRequest,
@@ -35,8 +38,8 @@ async def register_doctor(
     first_name: str | None = Form(default=None),
     last_name: str | None = Form(default=None),
     middle_name: str | None = Form(default=None),
-    gender: str | None = Form(default=None),
-    birth_date: str | None = Form(default=None),
+    gender: UserGender | None = Form(default=None),
+    birth_date: date | None = Form(default=None),
     birth_date_visible_to_doctors: bool = Form(default=False),
     specialization_ids: list[int] = Form(...),
     documents: list[UploadFile] = File(...),
