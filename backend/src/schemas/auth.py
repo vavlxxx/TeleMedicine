@@ -45,6 +45,7 @@ class RegisterPatientRequest(BaseDTO):
     password: str = Field(min_length=10, max_length=128)
     first_name: str | None = Field(default=None, max_length=120)
     last_name: str | None = Field(default=None, max_length=120)
+    middle_name: str | None = Field(default=None, max_length=120)
 
     @field_validator("username")
     @classmethod
@@ -56,7 +57,7 @@ class RegisterPatientRequest(BaseDTO):
     def validate_password_field(cls, value: str) -> str:
         return validate_password(value)
 
-    @field_validator("first_name", "last_name")
+    @field_validator("first_name", "last_name", "middle_name")
     @classmethod
     def normalize_name_fields(cls, value: str | None) -> str | None:
         return normalize_optional_name(value)
@@ -79,8 +80,9 @@ class RegisterDoctorMetaRequest(RegisterPatientRequest):
 class ProfileUpdateRequest(BaseDTO):
     first_name: str | None = Field(default=None, max_length=120)
     last_name: str | None = Field(default=None, max_length=120)
+    middle_name: str | None = Field(default=None, max_length=120)
 
-    @field_validator("first_name", "last_name")
+    @field_validator("first_name", "last_name", "middle_name")
     @classmethod
     def normalize_name_fields(cls, value: str | None) -> str | None:
         return normalize_optional_name(value)
@@ -116,6 +118,7 @@ class UserProfileDTO(BaseDTO):
     role: UserRole
     first_name: str | None
     last_name: str | None
+    middle_name: str | None
     avatar_url: str | None = None
     is_active: bool
     is_verified_doctor: bool

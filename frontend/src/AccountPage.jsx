@@ -128,7 +128,7 @@ function AccountPage() {
   const runProfileSubmit = useSubmitLock()
   const runDocumentsSubmit = useSubmitLock()
   const accessMessage = searchParams.get('access')
-    ? 'У вас нет доступа к запрошенному маршруту с текущей ролью.'
+    ? 'Недостаточно прав для просмотра этой страницы с вашей текущей ролью.'
     : ''
 
   const [isProfileLoading, setIsProfileLoading] = useState(() => !auth.user)
@@ -400,7 +400,7 @@ function AccountPage() {
     event.preventDefault()
 
     if (!auth.hasRole('doctor')) {
-      setDocumentsError('Загружать qualification documents может только пользователь с ролью doctor.')
+      setDocumentsError('Загружать квалификационные документы может только пользователь с ролью врача.')
       return
     }
 

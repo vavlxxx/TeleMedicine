@@ -103,6 +103,7 @@ class AuthService(BaseService):
             password_hash=hash_password(payload.password),
             first_name=payload.first_name,
             last_name=payload.last_name,
+            middle_name=payload.middle_name,
             role=UserRole.PATIENT,
             is_verified_doctor=False,
         )
@@ -146,6 +147,7 @@ class AuthService(BaseService):
                 password_hash=hash_password(payload.password),
                 first_name=payload.first_name,
                 last_name=payload.last_name,
+                middle_name=payload.middle_name,
                 role=UserRole.DOCTOR,
                 is_verified_doctor=False,
             )
@@ -232,6 +234,7 @@ class AuthService(BaseService):
     async def update_my_profile(self, payload: ProfileUpdateRequest, current_user: User) -> UserProfileDTO:
         current_user.first_name = payload.first_name if payload.first_name is not None else current_user.first_name
         current_user.last_name = payload.last_name if payload.last_name is not None else current_user.last_name
+        current_user.middle_name = payload.middle_name if payload.middle_name is not None else current_user.middle_name
         await self.db.commit()
 
         user = await self.db.users.get_by_id(current_user.id, *USER_PROFILE_OPTIONS)

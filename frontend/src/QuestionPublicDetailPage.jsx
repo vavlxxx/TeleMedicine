@@ -88,7 +88,7 @@ function QuestionPublicDetailPage() {
           {isLoading ? (
             <section className="vm-card vm-empty-state">
               <h2>Загружаем обсуждение</h2>
-              <p>Получаем вопрос и ответы специалистов из backend.</p>
+              <p>Пожалуйста, подождите. Загружаем ответы специалистов...</p>
             </section>
           ) : null}
 
@@ -159,7 +159,11 @@ function QuestionPublicDetailPage() {
                           </div>
 
                           <div>
-                            <h3>{getDisplayName(comment.author)}</h3>
+                            <h3>
+                              <AppLink href={buildDoctorProfileHref(comment.author.id)} style={{ color: 'inherit', textDecoration: 'none' }}>
+                                {getDisplayName(comment.author)}
+                              </AppLink>
+                            </h3>
                             <div className="vm-inline-meta">
                               <span className="vm-muted">{category}</span>
                               <span className="vm-muted">{visualProfile.experience}</span>
@@ -183,12 +187,14 @@ function QuestionPublicDetailPage() {
 
                         <div className="vm-response-card__footer">
                           <span className="vm-muted">Ответ опубликован {formatDateTime(comment.created_at)}</span>
-                          <AppLink
-                            className="vm-button vm-button--dark"
-                            href={`${buildDoctorProfileHref(comment.author.id)}&tab=consultations`}
-                          >
-                            {auth.isAuthenticated ? 'Открыть консультацию' : 'Профиль врача'}
-                          </AppLink>
+                          {auth.isAuthenticated ? (
+                            <AppLink
+                              className="vm-button vm-button--dark"
+                              href={`${buildDoctorProfileHref(comment.author.id)}&tab=consultations`}
+                            >
+                              Открыть консультацию
+                            </AppLink>
+                          ) : null}
                         </div>
                       </article>
                     )

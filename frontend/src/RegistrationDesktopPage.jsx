@@ -62,6 +62,7 @@ function RegistrationDesktopPage() {
   const [values, setValues] = useState({
     first_name: '',
     last_name: '',
+    middle_name: '',
     username: '',
     password: '',
     confirmPassword: '',
@@ -123,6 +124,7 @@ function RegistrationDesktopPage() {
           await auth.registerPatient({
             first_name: normalizeOptionalTextValue(values.first_name),
             last_name: normalizeOptionalTextValue(values.last_name),
+            middle_name: normalizeOptionalTextValue(values.middle_name),
             username: normalizeUsernameValue(values.username),
             password: values.password,
           })
@@ -130,6 +132,7 @@ function RegistrationDesktopPage() {
           await apiClient.registerDoctor({
             first_name: normalizeOptionalTextValue(values.first_name),
             last_name: normalizeOptionalTextValue(values.last_name),
+            middle_name: normalizeOptionalTextValue(values.middle_name),
             username: normalizeUsernameValue(values.username),
             password: values.password,
             specialization_ids: values.specialization_ids,
@@ -220,6 +223,20 @@ function RegistrationDesktopPage() {
               }}
             />
             {errors.last_name ? <span className="vm-form-error">{errors.last_name}</span> : null}
+          </label>
+
+          <label className="vm-auth-field">
+            <span className="vm-auth-field__label">Отчество</span>
+            <input
+              className="vm-input"
+              type="text"
+              value={values.middle_name}
+              onChange={(event) => {
+                setValues((current) => ({ ...current, middle_name: event.target.value }))
+                setErrors((current) => ({ ...current, middle_name: '' }))
+              }}
+            />
+            {errors.middle_name ? <span className="vm-form-error">{errors.middle_name}</span> : null}
           </label>
 
           <label className="vm-auth-field">

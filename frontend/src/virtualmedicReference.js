@@ -81,7 +81,14 @@ export function getDoctorVisualProfile(doctor) {
   }
 }
 
-export function getQuestionCategory(question) {
+export function getQuestionCategory(question, specializations = []) {
+  if (question?.specialization_id) {
+    const spec = specializations.find((s) => s.id === question.specialization_id)
+    if (spec) {
+      return spec.name
+    }
+  }
+
   const text = `${question?.text || ''}`.toLowerCase()
 
   if (/(голов|невро|мигр|сон|затыл)/.test(text)) {

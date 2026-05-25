@@ -161,6 +161,12 @@ function AdminDoctorModerationPage() {
   })
   const [pendingState, setPendingState] = useState(createCollectionState)
 
+  const [editingUser, setEditingUser] = useState(null)
+  const [editingUserRole, setEditingUserRole] = useState('')
+  const [editingUserFirstName, setEditingUserFirstName] = useState('')
+  const [editingUserLastName, setEditingUserLastName] = useState('')
+  const [isEditingUserSubmitting, setIsEditingUserSubmitting] = useState(false)
+
   const [selectedDoctor, setSelectedDoctor] = useState(null)
   const [isDoctorDetailsLoading, setIsDoctorDetailsLoading] = useState(false)
   const [doctorActionMessage, setDoctorActionMessage] = useState('')
@@ -222,7 +228,7 @@ function AdminDoctorModerationPage() {
     setSpecializationsState((current) => ({ ...current, isLoading: true, error: '' }))
 
     try {
-      const response = await apiClient.listSpecializations()
+      const response = await apiClient.listAdminSpecializations()
       setSpecializationsState({
         items: response,
         isLoading: false,
@@ -469,6 +475,34 @@ function AdminDoctorModerationPage() {
         text: error instanceof ApiError ? error.message : 'Не удалось обновить статус пользователя',
       })
     }
+  }
+
+  const handleEditUserSubmit = async (e) => {
+    e.preventDefault()
+    setIsEditingUserSubmitting(true)
+    try {
+      const payload = {
+        role: editingUserRole,
+        first_name: editingUserFirstName || null,
+        last_name: editingUserLastName || null,
+      }
+      await apiClient.updateAdminUser(editingUser.id, payload)
+      setFeedback({ type: 'success', text: 'Пользователь успешно обновлен' })
+      setEditingUser(null)
+      loadUsers()
+      loadDashboard()
+    } catch (err) {
+      setFeedback({ type: 'error', text: err instanceof ApiError ? err.message : 'Ошибка обновления' })
+    } finally {
+      setIsEditingUserSubmitting(false)
+    }
+  }
+
+  const openEditUser = (user) => {
+    setEditingUser(user)
+    setEditingUserRole(user.role)
+    setEditingUserFirstName(user.first_name || '')
+    setEditingUserLastName(user.last_name || '')
   }
 
   const handleCreateSpecialization = async (event) => {
@@ -989,6 +1023,13 @@ function AdminDoctorModerationPage() {
                         {user.is_active ? 'Заблокировать' : 'Разблокировать'}
                       </button>
                       <button
+                        className="vm-button vm-button--soft"
+                        type="button"
+                        onClick={() => openEditUser(user)}
+                      >
+                        Редактировать
+                      </button>
+                      <button
                         className="vm-button vm-button--danger"
                         type="button"
                         onClick={() => handleDeleteUser(user)}
@@ -1388,6 +1429,87 @@ function AdminDoctorModerationPage() {
             </div>
           </section>
         </div>
+      ) : null}
+
+      {editingUser ? (
+        <section className="vm-modal-overlay">
+          <div className="vm-modal" role="dialog" aria-modal="true" aria-labelledby="modal-edit-user-title">
+            <header className="vm-modal__header">
+              <h2 id="modal-edit-user-title">Редактирование пользователя</h2>
+              <button
+                className="vm-button vm-button--icon"
+                type="button"
+                onClick={() => setEditingUser(null)}
+                aria-label="Закрыть"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </header>
+
+            <div className="vm-modal__body">
+              <form id="edit-user-form" className="vm-grid" onSubmit={handleEditUserSubmit}>
+                <div>
+                  <label className="vm-label" htmlFor="edit-first-name">
+                    Имя
+                  </label>
+                  <input
+                    id="edit-first-name"
+                    className="vm-input"
+                    type="text"
+                    value={editingUserFirstName}
+                    onChange={(e) => setEditingUserFirstName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="vm-label" htmlFor="edit-last-name">
+                    Фамилия
+                  </label>
+                  <input
+                    id="edit-last-name"
+                    className="vm-input"
+                    type="text"
+                    value={editingUserLastName}
+                    onChange={(e) => setEditingUserLastName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="vm-label" htmlFor="edit-role">
+                    Роль
+                  </label>
+                  <select
+                    id="edit-role"
+                    className="vm-select"
+                    value={editingUserRole}
+                    onChange={(e) => setEditingUserRole(e.target.value)}
+                  >
+                    <option value="patient">Пациент</option>
+                    <option value="doctor">Врач</option>
+                    <option value="admin">Администратор</option>
+                    <option value="superuser">Суперпользователь</option>
+                  </select>
+                </div>
+              </form>
+            </div>
+
+            <footer className="vm-modal__footer">
+              <button
+                className="vm-button vm-button--soft"
+                type="button"
+                onClick={() => setEditingUser(null)}
+              >
+                Отмена
+              </button>
+              <button
+                form="edit-user-form"
+                className="vm-button vm-button--primary"
+                type="submit"
+                disabled={isEditingUserSubmitting}
+              >
+                {isEditingUserSubmitting ? 'Сохранение...' : 'Сохранить'}
+              </button>
+            </footer>
+          </div>
+        </section>
       ) : null}
     </VirtualMedicPage>
   )

@@ -21,6 +21,7 @@ def to_user_profile(user: User) -> UserProfileDTO:
         role=user.role,
         first_name=user.first_name,
         last_name=user.last_name,
+        middle_name=user.middle_name,
         avatar_url=user.avatar_url,
         is_active=user.is_active,
         is_verified_doctor=user.is_verified_doctor,
@@ -64,6 +65,7 @@ def to_doctor_list_item(user: User) -> DoctorListItemDTO:
         role=user.role,
         first_name=user.first_name,
         last_name=user.last_name,
+        middle_name=user.middle_name,
         is_verified_doctor=user.is_verified_doctor,
         is_online=_has_active_refresh_session(user),
         specializations=[
@@ -89,6 +91,7 @@ def to_user_short(user: User) -> UserShortDTO:
         role=user.role,
         first_name=user.first_name,
         last_name=user.last_name,
+        middle_name=user.middle_name,
         is_verified_doctor=user.is_verified_doctor,
     )
 
@@ -137,6 +140,7 @@ def to_admin_user_item(user: User) -> AdminUserListItemDTO:
         role=user.role,
         first_name=user.first_name,
         last_name=user.last_name,
+        middle_name=user.middle_name,
         is_active=user.is_active,
         is_verified_doctor=user.is_verified_doctor,
         created_at=user.created_at,

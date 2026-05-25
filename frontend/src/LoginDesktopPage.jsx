@@ -89,7 +89,7 @@ function LoginDesktopPage() {
             <input
               className="vm-input"
               type="text"
-              placeholder="patient_001"
+              placeholder="Введите имя пользователя"
               autoComplete="username"
               value={values.username}
               onChange={(event) => {

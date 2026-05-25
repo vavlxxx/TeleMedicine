@@ -113,7 +113,7 @@ export function VirtualMedicFooter() {
         </div>
 
         <div className="vm-footer__bottom">
-          <span>{'\u00a9 2026 VirtualMedic. \u0412\u0441\u0435 \u0440\u0430\u0437\u0434\u0435\u043b\u044b \u0441\u0430\u0439\u0442\u0430 \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u044e\u0442 \u0435\u0434\u0438\u043d\u044b\u0439 \u0444\u0443\u0442\u0435\u0440.'}</span>
+          <span>© {new Date().getFullYear()} VirtualMedic. Все права защищены. Имеются противопоказания, необходима консультация специалиста.</span>
         </div>
       </div>
     </footer>

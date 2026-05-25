@@ -34,6 +34,7 @@ class AdminUserListItemDTO(BaseDTO):
     role: UserRole
     first_name: str | None
     last_name: str | None
+    middle_name: str | None
     is_active: bool
     is_verified_doctor: bool
     created_at: datetime
@@ -85,3 +86,9 @@ class AdminAnswersResponseDTO(BaseDTO):
 
 class UpdateUserStatusRequestDTO(BaseDTO):
     is_active: bool
+
+
+class AdminUpdateUserRequestDTO(BaseDTO):
+    first_name: str | None = None
+    last_name: str | None = None
+    role: UserRole | None = None

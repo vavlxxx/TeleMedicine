@@ -2,7 +2,7 @@ import { normalizeMultilineTextValue } from './formSupport'
 import { routes } from './routes'
 
 export function getDisplayName(person) {
-  const fullName = [person?.first_name, person?.last_name].filter(Boolean).join(' ').trim()
+  const fullName = [person?.last_name, person?.first_name, person?.middle_name].filter(Boolean).join(' ').trim()
   return fullName || person?.username || 'Неизвестный пользователь'
 }
 

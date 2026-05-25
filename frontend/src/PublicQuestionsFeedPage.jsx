@@ -15,15 +15,7 @@ import {
 
 const QUESTIONS_PAGE_SIZE = 12
 
-const categoryOrder = [
-  'Все направления',
-  'Терапия',
-  'Педиатрия',
-  'Дерматология',
-  'Неврология',
-  'Гастроэнтерология',
-  'Кардиология',
-]
+
 
 function PublicQuestionsFeedPage() {
   const auth = useAuth()
@@ -33,6 +25,7 @@ function PublicQuestionsFeedPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('Все направления')
   const [questions, setQuestions] = useState([])
+  const [specializations, setSpecializations] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [isWizardOpen, setIsWizardOpen] = useState(false)
@@ -50,13 +43,17 @@ function PublicQuestionsFeedPage() {
       setErrorMessage('')
 
       try {
-        const response = await apiClient.listQuestions({
-          offset: 0,
-          limit: QUESTIONS_PAGE_SIZE,
-        })
+        const [response, specializationsResponse] = await Promise.all([
+          apiClient.listQuestions({
+            offset: 0,
+            limit: QUESTIONS_PAGE_SIZE,
+          }),
+          apiClient.listSpecializations()
+        ])
 
         if (!isCancelled) {
           setQuestions(response)
+          setSpecializations(specializationsResponse)
         }
       } catch (error) {
         if (!isCancelled) {
@@ -76,18 +73,25 @@ function PublicQuestionsFeedPage() {
     }
   }, [])
 
+  const categoryOrder = useMemo(() => {
+    return [
+      'Все направления',
+      ...specializations.map((s) => s.name)
+    ]
+  }, [specializations])
+
   const filteredQuestions = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase()
 
     return questions.filter((question) => {
-      const category = getQuestionCategory(question)
+      const category = getQuestionCategory(question, specializations)
       const categoryMatches = selectedCategory === 'Все направления' || selectedCategory === category
       const searchMatches =
         !normalizedSearch || question.text.toLowerCase().includes(normalizedSearch)
 
       return categoryMatches && searchMatches
     })
-  }, [questions, searchQuery, selectedCategory])
+  }, [questions, searchQuery, selectedCategory, specializations])
 
   const handleReplySubmit = (questionId) => async (event) => {
     event.preventDefault()
@@ -206,7 +210,7 @@ function PublicQuestionsFeedPage() {
           {!isLoading && !errorMessage ? (
             <div className="vm-question-list">
               {filteredQuestions.map((question) => {
-                const category = getQuestionCategory(question)
+                const category = getQuestionCategory(question, specializations)
                 const hasAnswers = question.comments.length > 0
 
                 return (
